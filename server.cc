@@ -1,3 +1,4 @@
+#include <chrono>
 #include <string.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -24,8 +25,9 @@ int create_server() {
 }
 
 int main( void ) {
+	
 	int listen_fd = create_server();
-	int buffer_size = 106496;
+	int buffer_size = 212992;
 	char byte[ buffer_size ];
 	memset( &byte, 0, sizeof( byte ) );
 	std::cout << "Waiting for connection..." << std::endl;	
@@ -36,6 +38,7 @@ int main( void ) {
 	output_file.open( "/home/matt/Desktop/received.mov", std::ios_base::binary | std::ios::out );
 
 	int bytes = buffer_size;
+	auto begin = std::chrono::high_resolution_clock::now();
 	do {
 		if( recv( ack_fd, byte, buffer_size, MSG_WAITALL ) > 0 ) {
 			output_file.write( byte, buffer_size );
@@ -47,6 +50,8 @@ int main( void ) {
 			break;
 		}
 	} while( true );
-	std::cout << "\nReceived file" << std::endl;
+	auto end = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::seconds>( end - begin ).count();
+	std::cout << "\nReceived file in " << duration << " s" << std::endl;
 	return 0;
 }
