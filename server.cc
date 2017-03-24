@@ -38,12 +38,16 @@ int main( void ) {
 	output_file.open( "/home/matt/Desktop/received.mov", std::ios_base::binary | std::ios::out );
 
 	int bytes = buffer_size;
+	double total_bytes = 0;
+	double received_bytes = 0;
 	auto begin = std::chrono::high_resolution_clock::now();
 	do {
-		if( recv( ack_fd, byte, buffer_size, MSG_WAITALL ) > 0 ) {
+
+		received_bytes = recv( ack_fd, byte, buffer_size, MSG_WAITALL );
+		if( received_bytes > 0 ) {
 			output_file.write( byte, buffer_size );
-			std::cout << '\r'<< "Received: " << bytes << " bytes" << std::flush;
-			bytes = bytes + buffer_size;
+			std::cout << '\r'<< "Received: " << total_bytes/1000000000 << " GB" << std::flush;
+			total_bytes = total_bytes + received_bytes;
 			memset( &byte, 0, sizeof( byte ) );
 		} else {
 			output_file.close();
