@@ -23,10 +23,18 @@ int create_connection() {
 } 	
 		
 int main( void ) {
-	std::string path = "/home/pi/samsung/kayla_video.mov";
+	int n = 0;
+	unsigned int m = sizeof( n );
+	std::string path = "/home/pi/samsung/arma.mp4";
 	int send_fd = create_connection();
+	int send_buffer_size = 106496;
+	int result = setsockopt( send_fd, SOL_SOCKET, SO_SNDBUF, &send_buffer_size, sizeof( send_buffer_size ) );
+	getsockopt(send_fd,  SOL_SOCKET, SO_RCVBUF, (void*)&n, &m );
+	std::cout << "Buffer size: " << n << std::endl;
+
 	std::ifstream file( path.c_str(), std::ios_base::binary | std::ios::ate );
 	std::streamsize size = file.tellg();
+	std::cout << "std::streamsize: " << size << std::endl;
 	file.seekg( 0, std::ios::beg );
 	std::vector<char> buffer( size );
 	std::cout << "Made the vector" << std::endl;
