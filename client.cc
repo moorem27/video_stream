@@ -12,7 +12,7 @@ int create_connection() {
 
 	memset( &server_connection, 0, sizeof( server_connection ) );
 	server_connection.sin_family = AF_INET;
-	server_connection.sin_addr.s_addr = inet_addr( "192.168.1.12" );
+	server_connection.sin_addr.s_addr = inet_addr( "192.168.1.3" );
 	server_connection.sin_port = htons( 8888 );
 
 	int timeout = 0;
@@ -23,24 +23,19 @@ int create_connection() {
 } 	
 		
 int main( void ) {
-	int n = 0;
-	unsigned int m = sizeof( n );
-	std::string path = "/home/pi/samsung/arma.mp4";
+	// 163840  (/proc/sys/net/core/rmem_max)
+	std::string path = "/home/pi/samsung/sv.mp4";
 	int send_fd = create_connection();
-	int send_buffer_size = 106496;
-	int result = setsockopt( send_fd, SOL_SOCKET, SO_SNDBUF, &send_buffer_size, sizeof( send_buffer_size ) );
-	getsockopt(send_fd,  SOL_SOCKET, SO_RCVBUF, (void*)&n, &m );
-	std::cout << "Buffer size: " << n << std::endl;
-
+	ssize_t send_size = 163840; 
 	std::ifstream file( path.c_str(), std::ios_base::binary | std::ios::ate );
-	std::streamsize size = file.tellg();
-	std::cout << "std::streamsize: " << size << std::endl;
+	std::cout << "Made file" << std::endl;
 	file.seekg( 0, std::ios::beg );
-	std::vector<char> buffer( size );
+	std::vector<char> buffer( send_size,0 );
 	std::cout << "Made the vector" << std::endl;
-	if( file.read( buffer.data(), size ) )
-		std::cout << "Amount of data sent: " << send( send_fd, static_cast<void *>( buffer.data() ), size, 0 ) << std::endl;
-
+	
+	while( file.read( buffer.data(), buffer.size() ) ) {
+		send( send_fd, static_cast<void *>( buffer.data() ), buffer.size(), 0 );
+	}	
 	return 0;
 }
 
