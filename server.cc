@@ -25,23 +25,28 @@ int create_server() {
 
 int main( void ) {
 	int listen_fd = create_server();
-	char byte[ 1024 ];
+	int buffer_size = 106496;
+	char byte[ buffer_size ];
 	memset( &byte, 0, sizeof( byte ) );
-	
+	std::cout << "Waiting for connection..." << std::endl;	
 	int ack_fd = accept( listen_fd, 0, 0 );
-
+	std::cout << "Connected!" << std::endl;
+	setsockopt( ack_fd, SOL_SOCKET, SO_RCVBUF, &buffer_size, sizeof( buffer_size ) );
 	std::ofstream output_file{};
 	output_file.open( "/home/matt/Desktop/received.mov", std::ios_base::binary | std::ios::out );
 
+	int bytes = buffer_size;
 	do {
-		if( recv( ack_fd, byte, 512, MSG_WAITALL ) > 0 ) {
-			output_file.write( byte, 512 );
+		if( recv( ack_fd, byte, buffer_size, MSG_WAITALL ) > 0 ) {
+			output_file.write( byte, buffer_size );
+			std::cout << '\r'<< "Received: " << bytes << " bytes" << std::flush;
+			bytes = bytes + buffer_size;
 			memset( &byte, 0, sizeof( byte ) );
 		} else {
 			output_file.close();
 			break;
 		}
 	} while( true );
-	std::cout << "Received file" << std::endl;
+	std::cout << "\nReceived file" << std::endl;
 	return 0;
 }
