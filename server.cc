@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <fstream>
 #include <iostream>
+#include <stdlib.h>
 
 int create_server() {
 	int val = 1;
@@ -25,7 +26,8 @@ int create_server() {
 }
 
 int main( void ) {
-	
+        	
+	const char* convert =  "ffmpeg -i /home/matt/Desktop/first_vid.h264 -c copy /home/matt/Desktop/first_vid.mp4";
 	int listen_fd = create_server();
 	int buffer_size = 212992;
 	char byte[ buffer_size ];
@@ -35,7 +37,7 @@ int main( void ) {
 	std::cout << "Connected!" << std::endl;
 	setsockopt( ack_fd, SOL_SOCKET, SO_RCVBUF, &buffer_size, sizeof( buffer_size ) );
 	std::ofstream output_file{};
-	output_file.open( "/home/matt/Desktop/received.mov", std::ios_base::binary | std::ios::out );
+	output_file.open( "/home/matt/Desktop/first_vid.h264", std::ios_base::binary | std::ios::out );
 
 	int bytes = buffer_size;
 	double total_bytes = 0;
@@ -46,7 +48,7 @@ int main( void ) {
 		received_bytes = recv( ack_fd, byte, buffer_size, MSG_WAITALL );
 		if( received_bytes > 0 ) {
 			output_file.write( byte, buffer_size );
-			std::cout << '\r'<< "Received: " << total_bytes/1000000000 << " GB" << std::flush;
+			std::cout << '\r'<< "Received: " << total_bytes/1000000000 << std::flush;
 			total_bytes = total_bytes + received_bytes;
 			memset( &byte, 0, sizeof( byte ) );
 		} else {
@@ -56,6 +58,8 @@ int main( void ) {
 	} while( true );
 	auto end = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::seconds>( end - begin ).count();
+	system( convert );
+	system( "rm /home/matt/Desktop/first_vid.h264" );
 	std::cout << "\nReceived file in " << duration << " s" << std::endl;
 	return 0;
 }

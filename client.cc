@@ -5,6 +5,11 @@
 #include <fstream>
 #include <sys/socket.h>
 #include <iostream>
+#include <stdlib.h>
+#include <thread>
+#include <chrono>
+//raspistill -o /home/pi/samsung/first_pic2.jpg
+const char* take_video = "raspivid -o /home/pi/samsung/video.h264 -t 10000 -d";
 
 int create_connection() {
 	struct sockaddr_in server_connection{};
@@ -24,9 +29,11 @@ int create_connection() {
 		
 int main( void ) {
 	// 163840  (/proc/sys/net/core/rmem_max)
-	std::string path = "/home/pi/samsung/sv.mp4";
+ 	system( take_video );
+	std::string path = "/home/pi/samsung/video.h264";
 	int send_fd = create_connection();
-	ssize_t send_size = 163840; 
+	int send_size = 163840; 
+	setsockopt( send_fd, SOL_SOCKET, SO_SNDBUF, &send_size, sizeof( send_size ) );
 	std::ifstream file( path.c_str(), std::ios_base::binary | std::ios::ate );
 	std::cout << "Made file" << std::endl;
 	file.seekg( 0, std::ios::beg );
@@ -34,8 +41,11 @@ int main( void ) {
 	std::cout << "Made the vector" << std::endl;
 	
 	while( file.read( buffer.data(), buffer.size() ) ) {
-		send( send_fd, static_cast<void *>( buffer.data() ), buffer.size(), 0 );
-	}	
+		if( send( send_fd, static_cast<void *>( buffer.data() ), buffer.size(), 0 ) < 0 )
+			std::cout << "Send failed" << std::endl;
+	}
+
+	system( "rm /home/pi/samsung/video.h264" );
 	return 0;
 }
 
