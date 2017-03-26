@@ -52,6 +52,7 @@ int main( void ) {
 			total_bytes = total_bytes + received_bytes;
 			memset( &byte, 0, sizeof( byte ) );
 		} else {
+			std::cout << "Closing file!" << std::endl;
 			output_file.close();
 			break;
 		}
