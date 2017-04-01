@@ -8,7 +8,9 @@
 #include <stdlib.h>
 #include <thread>
 #include <chrono>
-#include <wiringPi.h>
+#include <sstream>
+
+//#include <wiringPi.h>
 
 namespace {
 	const char* take_picture = "raspistill -o /home/pi/samsung/motion_pic.jpg";
@@ -50,6 +52,7 @@ void react_to_motion( const int send_fd ) {
 	while( file.read( buffer.data(), buffer.size() ) ) {
 		if( send( send_fd, static_cast<void *>( buffer.data() ), buffer.size(), 0 ) < 0 )
 			std::cout << "Send failed" << std::endl;
+		std::fill( buffer.begin(), buffer.end(), 0 );
 	}
 	std::cout << "Finished sending video" << std::endl;
 	file.close();
@@ -59,18 +62,45 @@ void react_to_motion( const int send_fd ) {
 
 
 int main( void ) {
-	std::cout << wiringPiSetupGpio() << std::endl;
-	const int send_fd = create_connection();
-	std::cout << "send_fd " << send_fd << std::endl;
-	std::this_thread::sleep_for( std::chrono::seconds( 15 ) );
-
-	while( true ) {
-		if( digitalRead( 7 ) ) {
-			std::cout << "Motion detected!" << std::endl;
-			react_to_motion( send_fd );
-			break;
+	std::ifstream file;
+	file.open( "/home/matt/q1.txt", std::ifstream::in );
+	file.seekg( 0, std::ifstream::end );
+	int size = file.tellg();
+	file.seekg( 0, std::ifstream::beg );
+	std::cout << size << std::endl;	
+	int index = 0;
+	// Seek to beginning of file
+	// From beginning of file to size / i, write chars to file
+	// When you reach size / i, open a new file, and from where you already are start writing characters to new file
+	// repeat every size / i
+	for( int i = 4; i > 0; --i ) {
+		++index;
+		std::ostringstream file_path;
+		file_path << "/home/matt/Desktop/file" << index;
+		std::string file_name( file_path.str() );
+		std::ofstream out_file;
+		out_file.open( file_name, std::ofstream::out | std::ofstream::app );
+		while( file.tellg() != size/i ) {
+			out_file << static_cast<char>( file.get() );
+			
 		}
-        }
+		out_file.close();
+	}
+
+//	std::cout << wiringPiSetupGpio() << std::endl;
+//	const int send_fd = create_connection();
+//	std::cout << "send_fd " << send_fd << std::endl;
+//	std::this_thread::sleep_for( std::chrono::seconds( 15 ) );
+//
+//	while( true ) {
+//		// TODO Use signal interrupts
+//		if( digitalRead( 7 ) ) {
+//			std::cout << "Motion detected!" << std::endl;
+//			react_to_motion( send_fd );
+//			break;
+//		}
+//		std::this_thread::sleep_for( std::chrono::milliseconds( 1500 ) );
+  //      }
 	return 0;
 }
 
