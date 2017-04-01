@@ -67,22 +67,22 @@ int main( void ) {
 	file.seekg( 0, std::ifstream::end );
 	int size = file.tellg();
 	file.seekg( 0, std::ifstream::beg );
-	std::cout << size << std::endl;	
 	int index = 0;
+	const int chunks = 4;
 	// Seek to beginning of file
-	// From beginning of file to size / i, write chars to file
-	// When you reach size / i, open a new file, and from where you already are start writing characters to new file
-	// repeat every size / i
-	for( int i = 4; i > 0; --i ) {
+	// From beginning of file to ( index * size ) / chunks, write chars to file
+	// When you reach temp end, open a new file, and from where you already are start writing characters to new file
+	// repeat every ( index * size ) / chunks
+	for( int i = chunks; i > 0; --i ) {
 		++index;
+		int current_end = ( ( index * size ) / chunks );
 		std::ostringstream file_path;
 		file_path << "/home/matt/Desktop/file" << index;
 		std::string file_name( file_path.str() );
 		std::ofstream out_file;
 		out_file.open( file_name, std::ofstream::out | std::ofstream::app );
-		while( file.tellg() != size/i ) {
-			out_file << static_cast<char>( file.get() );
-			
+		while( file.tellg() != current_end ) {
+			out_file << static_cast<char>( file.get() );;
 		}
 		out_file.close();
 	}
