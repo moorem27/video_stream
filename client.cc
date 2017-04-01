@@ -9,7 +9,6 @@
 #include <thread>
 #include <chrono>
 #include <sstream>
-
 //#include <wiringPi.h>
 
 namespace {
@@ -42,11 +41,11 @@ int create_connection() {
 
 
 
-void react_to_motion( const int send_fd ) {
+void send_chunk( const std::string file_path ) {
+	const int send_fd = create_connection();
 	std::vector<char> buffer( send_size, 0 );
-	system( take_video );
 	std::cout << "Finished taking video" << std::endl;
-	std::ifstream file( video_path.c_str(), std::ios_base::binary | std::ios::ate );
+	std::ifstream file( file_path, std::ios_base::binary | std::ios::ate );
 	file.seekg( 0, std::ios::beg );
 
 	while( file.read( buffer.data(), buffer.size() ) ) {
@@ -60,34 +59,46 @@ void react_to_motion( const int send_fd ) {
 }
 
 
-
-int main( void ) {
+std::vector<std::string> chunk_file( const int chunks, const std::string file_path ) {
+	int index = 0;
 	std::ifstream file;
-	file.open( "/home/matt/q1.txt", std::ifstream::in );
+	std::vector<std::string> paths{};
+	file.open( file_path, std::ifstream::in );
+	
 	file.seekg( 0, std::ifstream::end );
 	int size = file.tellg();
 	file.seekg( 0, std::ifstream::beg );
-	int index = 0;
-	const int chunks = 4;
+	
+	for( int i = chunks; i > 0; --i ) {
+		++index;
+		int current_end = ( ( index * size ) / chunks );
+		std::ostringstream file_path;
+		file_path << "/home/matt/Desktop/file" << index << ".txt";
+		std::string file_name( file_path.str() );
+		paths.push_back( file_name );	
+		std::ofstream out_file;
+		out_file.open( file_name, std::ofstream::out | std::ofstream::app );
+		while( file.tellg() != current_end ) {
+			out_file << static_cast<char>( file.get() );
+		}
+		out_file.close();
+	}
+
+	return paths;	
+}
+
+int main( void ) {
+	const int chunks = 6;
+	const std::string file_path = "/home/matt/q1.txt";
+	std::vector<std::string> paths = chunk_file( chunks, file_path );
+	std::vector<std::thread> threads{};
+	for( const auto& path : paths ) {
+		std::cout << path << std::endl;
+	}
 	// Seek to beginning of file
 	// From beginning of file to ( index * size ) / chunks, write chars to file
 	// When you reach temp end, open a new file, and from where you already are start writing characters to new file
 	// repeat every ( index * size ) / chunks
-	for( int i = chunks; i > 0; --i ) {
-		++index;
-		int current_end = ( ( index * size ) / chunks );
-		std::cout << "file.tellg(): " << file.tellg() << std::endl;
-		std::cout << "current_end: " << current_end << std::endl;
-		std::ostringstream file_path;
-		file_path << "/home/matt/Desktop/file" << index << ".txt";
-		std::string file_name( file_path.str() );
-		std::ofstream out_file;
-		out_file.open( file_name, std::ofstream::out | std::ofstream::app );
-		while( file.tellg() != current_end ) {
-			out_file << static_cast<char>( file.get() );;
-		}
-		out_file.close();
-	}
 
 //	std::cout << wiringPiSetupGpio() << std::endl;
 //	const int send_fd = create_connection();
@@ -97,8 +108,12 @@ int main( void ) {
 //	while( true ) {
 //		// TODO Use signal interrupts
 //		if( digitalRead( 7 ) ) {
+//			system( take_video );
+//			std::vector<std::string> paths = chunk_file( 6, video_path );
+			for( const auto& path : paths ) {
+				
+			}
 //			std::cout << "Motion detected!" << std::endl;
-//			react_to_motion( send_fd );
 //			break;
 //		}
 //		std::this_thread::sleep_for( std::chrono::milliseconds( 1500 ) );
