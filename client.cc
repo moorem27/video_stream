@@ -76,8 +76,10 @@ int main( void ) {
 	for( int i = chunks; i > 0; --i ) {
 		++index;
 		int current_end = ( ( index * size ) / chunks );
+		std::cout << "file.tellg(): " << file.tellg() << std::endl;
+		std::cout << "current_end: " << current_end << std::endl;
 		std::ostringstream file_path;
-		file_path << "/home/matt/Desktop/file" << index;
+		file_path << "/home/matt/Desktop/file" << index << ".txt";
 		std::string file_name( file_path.str() );
 		std::ofstream out_file;
 		out_file.open( file_name, std::ofstream::out | std::ofstream::app );
