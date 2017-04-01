@@ -8,7 +8,8 @@
 #include <stdlib.h>
 #include <thread>
 #include <chrono>
-#include <wiringPi.h>
+#include <sstream>
+//#include <wiringPi.h>
 
 namespace {
 	const char* take_picture = "raspistill -o /home/pi/samsung/motion_pic.jpg";
@@ -40,16 +41,17 @@ int create_connection() {
 
 
 
-void react_to_motion( const int send_fd ) {
+void send_chunk( const std::string file_path ) {
+	const int send_fd = create_connection();
 	std::vector<char> buffer( send_size, 0 );
-	system( take_video );
 	std::cout << "Finished taking video" << std::endl;
-	std::ifstream file( video_path.c_str(), std::ios_base::binary | std::ios::ate );
+	std::ifstream file( file_path, std::ios_base::binary | std::ios::ate );
 	file.seekg( 0, std::ios::beg );
 
 	while( file.read( buffer.data(), buffer.size() ) ) {
 		if( send( send_fd, static_cast<void *>( buffer.data() ), buffer.size(), 0 ) < 0 )
 			std::cout << "Send failed" << std::endl;
+		std::fill( buffer.begin(), buffer.end(), 0 );
 	}
 	std::cout << "Finished sending video" << std::endl;
 	file.close();
@@ -57,20 +59,65 @@ void react_to_motion( const int send_fd ) {
 }
 
 
+std::vector<std::string> chunk_file( const int chunks, const std::string file_path ) {
+	int index = 0;
+	std::ifstream file;
+	std::vector<std::string> paths{};
+	file.open( file_path, std::ifstream::in );
+	
+	file.seekg( 0, std::ifstream::end );
+	int size = file.tellg();
+	file.seekg( 0, std::ifstream::beg );
+	
+	for( int i = chunks; i > 0; --i ) {
+		++index;
+		int current_end = ( ( index * size ) / chunks );
+		std::ostringstream file_path;
+		file_path << "/home/matt/Desktop/file" << index << ".txt";
+		std::string file_name( file_path.str() );
+		paths.push_back( file_name );	
+		std::ofstream out_file;
+		out_file.open( file_name, std::ofstream::out | std::ofstream::app );
+		while( file.tellg() != current_end ) {
+			out_file << static_cast<char>( file.get() );
+		}
+		out_file.close();
+	}
+
+	return paths;	
+}
 
 int main( void ) {
-	std::cout << wiringPiSetupGpio() << std::endl;
-	const int send_fd = create_connection();
-	std::cout << "send_fd " << send_fd << std::endl;
-	std::this_thread::sleep_for( std::chrono::seconds( 15 ) );
+	const int chunks = 6;
+	const std::string file_path = "/home/matt/q1.txt";
+	std::vector<std::string> paths = chunk_file( chunks, file_path );
+	std::vector<std::thread> threads{};
+	for( const auto& path : paths ) {
+		std::cout << path << std::endl;
+	}
+	// Seek to beginning of file
+	// From beginning of file to ( index * size ) / chunks, write chars to file
+	// When you reach temp end, open a new file, and from where you already are start writing characters to new file
+	// repeat every ( index * size ) / chunks
 
-	while( true ) {
-		if( digitalRead( 7 ) ) {
-			std::cout << "Motion detected!" << std::endl;
-			react_to_motion( send_fd );
-			break;
-		}
-        }
+//	std::cout << wiringPiSetupGpio() << std::endl;
+//	const int send_fd = create_connection();
+//	std::cout << "send_fd " << send_fd << std::endl;
+//	std::this_thread::sleep_for( std::chrono::seconds( 15 ) );
+//
+//	while( true ) {
+//		// TODO Use signal interrupts
+//		if( digitalRead( 7 ) ) {
+//			system( take_video );
+//			std::vector<std::string> paths = chunk_file( 6, video_path );
+			for( const auto& path : paths ) {
+				
+			}
+//			std::cout << "Motion detected!" << std::endl;
+//			break;
+//		}
+//		std::this_thread::sleep_for( std::chrono::milliseconds( 1500 ) );
+  //      }
 	return 0;
 }
 
