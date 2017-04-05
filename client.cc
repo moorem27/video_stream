@@ -138,5 +138,40 @@ int main( void ) {
 	return 0;
 }
 
+// TODO: In case things go horribly, horribly wrong...(like they are)
+//void react_to_motion( const int send_fd ) {
+//    std::vector<char> buffer( send_size, 0 );
+//    system( take_video );
+//    std::cout << "Finished taking video" << std::endl;
+//    std::ifstream file( video_path.c_str(), std::ios_base::binary | std::ios::ate );
+//    file.seekg( 0, std::ios::beg );
+//
+//    while( file.read( buffer.data(), buffer.size() ) ) {
+//        if( send( send_fd, static_cast<void *>( buffer.data() ), buffer.size(), 0 ) < 0 )
+//            std::cout << "Send failed" << std::endl;
+//    }
+//    std::cout << "Finished sending video" << std::endl;
+//    file.close();
+//    system( remove_video );
+//}
+//
+//
+//
+//int main( void ) {
+//    std::cout << wiringPiSetupGpio() << std::endl;
+//    const int send_fd = create_connection();
+//    std::cout << "send_fd " << send_fd << std::endl;
+//    std::this_thread::sleep_for( std::chrono::seconds( 15 ) );
+//
+//    while( true ) {
+//        if( digitalRead( 7 ) ) {
+//            std::cout << "Motion detected!" << std::endl;
+//            react_to_motion( send_fd );
+//            break;
+//        }
+//    }
+//    return 0;
+//}
+
 
 
