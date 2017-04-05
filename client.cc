@@ -66,22 +66,39 @@ std::vector<std::string> chunk_file( const int chunks, const std::string file_pa
 	file.open( file_path, std::ifstream::in );
 	
 	file.seekg( 0, std::ifstream::end );
-	int size = file.tellg();
+	long long int size = file.tellg();
 	file.seekg( 0, std::ifstream::beg );
-	
+
+    long long int chunk_size = size/chunks;
+	std::cout << "Chunk size: " << chunk_size << std::endl;
+
+	int max_buffer_size = 4096;
+
+	while( chunk_size % max_buffer_size != 0 )
+		--max_buffer_size;
+
+
+    std::cout << "chunk % buffer: " << max_buffer_size << std::endl;
 	for( int i = chunks; i > 0; --i ) {
+		auto begin = std::chrono::high_resolution_clock::now();
 		++index;
-		int current_end = ( ( index * size ) / chunks );
-		std::ostringstream file_path;
-		file_path << "/home/matt/Desktop/file" << index << ".txt";
-		std::string file_name( file_path.str() );
-		paths.push_back( file_name );	
+		char buffer[max_buffer_size];
+
+		long long int current_end = ( ( index * size ) / chunks );
+		std::ostringstream out_file_path;
+		out_file_path << "/Users/matthewmoore/Desktop/chunk" << index << ".mov";
+		std::string out_file_name( out_file_path.str() );
+		paths.push_back( out_file_name );
 		std::ofstream out_file;
-		out_file.open( file_name, std::ofstream::out | std::ofstream::app );
+		out_file.open( out_file_name, std::ofstream::out | std::ofstream::app );
 		while( file.tellg() != current_end ) {
-			out_file << static_cast<char>( file.get() );
+			file.read( buffer, max_buffer_size );
+			out_file << buffer;
+			memset( &buffer, 0, sizeof( buffer ) );
 		}
 		out_file.close();
+		auto end = std::chrono::high_resolution_clock::now();
+		std::cout << std::chrono::duration_cast<std::chrono::seconds>( end - begin ).count() << " s" << std::endl;
 	}
 
 	return paths;	
@@ -89,7 +106,7 @@ std::vector<std::string> chunk_file( const int chunks, const std::string file_pa
 
 int main( void ) {
 	const int chunks = 6;
-	const std::string file_path = "/home/matt/q1.txt";
+	const std::string file_path = "/Users/matthewmoore/Desktop/silicon_valley.mov";
 	std::vector<std::string> paths = chunk_file( chunks, file_path );
 	std::vector<std::thread> threads{};
 	for( const auto& path : paths ) {
