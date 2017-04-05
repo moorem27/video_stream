@@ -11,6 +11,8 @@
 #include <sstream>
 //#include <wiringPi.h>
 
+
+// TODO Move all helper functions into a library file
 namespace {
 	const char* take_picture = "raspistill -o /home/pi/samsung/motion_pic.jpg";
 	const char* take_video = "raspivid -o /home/pi/samsung/video.h264 -t 30000 -d";
@@ -59,6 +61,7 @@ void send_chunk( const std::string file_path ) {
 }
 
 
+// TODO Use vector for dynamically sizeable buffer
 std::vector<std::string> chunk_file( const int chunks, const std::string file_path ) {
 	std::ifstream file;
 	std::vector<std::string> paths{};
@@ -92,7 +95,7 @@ std::vector<std::string> chunk_file( const int chunks, const std::string file_pa
 
     std::cout << "chunk % buffer: " << max_buffer_size << std::endl;
 	for( int i = 1; i <= chunks; ++i ) {
-		auto begin = std::chrono::high_resolution_clock::now();
+
 
 		char buffer[ max_buffer_size ];
 		memset( &buffer, 0, sizeof( buffer ) );
@@ -106,6 +109,7 @@ std::vector<std::string> chunk_file( const int chunks, const std::string file_pa
 		std::ofstream out_file;
 		out_file.open( out_file_name, std::ios_base::binary | std::ios::out );
 		long long int last = 0;
+
 		if( out_file.is_open() ) {
 			out_file.seekp(0, std::ios_base::beg);
 			while ( static_cast<long long int>( file.tellg() ) != current_end && file.read( buffer, max_buffer_size ) ) {
@@ -121,21 +125,31 @@ std::vector<std::string> chunk_file( const int chunks, const std::string file_pa
 		}
 		std::cout << "file.tellg() " << last << std::endl;
 		out_file.close();
-		auto end = std::chrono::high_resolution_clock::now();
-		std::cout << std::chrono::duration_cast<std::chrono::seconds>( end - begin ).count() << " s" << std::endl;
+
 	}
 
 	return paths;	
 }
 
+void combine_files( const std::vector<std::string>& paths, const std::string out_path ) {
+	std::ofstream output( out_path, std::ios_base::binary | std::ios::out );
+
+	for( const auto& path : paths ) {
+		std::ifstream file( path, std::ios_base::binary );
+		output << file.rdbuf();
+	}
+}
+
 int main( void ) {
 	const int chunks = 3;
-	const std::string file_path = "/home/matt/Desktop/sample.mp4";
+	const std::string file_path = "/home/matt/Desktop/wife_and_kayla.mp4";
+	auto begin = std::chrono::high_resolution_clock::now();
 	std::vector<std::string> paths = chunk_file( chunks, file_path );
-	std::vector<std::thread> threads{};
-	for( const auto& path : paths ) {
-		std::cout << path << std::endl;
-	}
+	auto end = std::chrono::high_resolution_clock::now();
+	std::cout << std::chrono::duration_cast<std::chrono::seconds>( end - begin ).count() << " s" << std::endl;
+
+	combine_files( paths, "/home/matt/Desktop/example.mp4" );
+
 
 	return 0;
 }
