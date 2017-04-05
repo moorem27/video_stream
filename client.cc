@@ -60,42 +60,66 @@ void send_chunk( const std::string file_path ) {
 
 
 std::vector<std::string> chunk_file( const int chunks, const std::string file_path ) {
-	int index = 0;
 	std::ifstream file;
 	std::vector<std::string> paths{};
-	file.open( file_path, std::ifstream::in );
-	
+
+	// Open binary file
+	file.open( file_path, std::ios_base::binary );
+
+	// Seek to end
 	file.seekg( 0, std::ifstream::end );
+
+	// Grab character position
 	long long int size = file.tellg();
+	std::cout << "Total file size: " << size << std::endl;
+	// Seek back to beginning;
 	file.seekg( 0, std::ifstream::beg );
 
+	// Chunk size = total size / num chunks
     long long int chunk_size = size/chunks;
 	std::cout << "Chunk size: " << chunk_size << std::endl;
 
-	int max_buffer_size = 4096;
+	// Start max buffer size at arbitrarily large number
+	int max_buffer_size = 10000;
 
+	// Reach a buffer size the will divide evenly into the chunk size
 	while( chunk_size % max_buffer_size != 0 )
-		--max_buffer_size;
+		max_buffer_size--;
+
+	std::cout << "max_buffer_size: " << max_buffer_size << std::endl;
+
 
 
     std::cout << "chunk % buffer: " << max_buffer_size << std::endl;
-	for( int i = chunks; i > 0; --i ) {
+	for( int i = 1; i <= chunks; ++i ) {
 		auto begin = std::chrono::high_resolution_clock::now();
-		++index;
-		char buffer[max_buffer_size];
 
-		long long int current_end = ( ( index * size ) / chunks );
+		char buffer[ max_buffer_size ];
+		memset( &buffer, 0, sizeof( buffer ) );
+
+		long long int current_end = ( ( i * size ) / chunks );
+		std::cout << "current_end: " << current_end << std::endl;
 		std::ostringstream out_file_path;
-		out_file_path << "/Users/matthewmoore/Desktop/chunk" << index << ".mov";
+		out_file_path << "/home/matt/Desktop/chunk" << i << ".mp4";
 		std::string out_file_name( out_file_path.str() );
 		paths.push_back( out_file_name );
 		std::ofstream out_file;
-		out_file.open( out_file_name, std::ofstream::out | std::ofstream::app );
-		while( file.tellg() != current_end ) {
-			file.read( buffer, max_buffer_size );
-			out_file << buffer;
-			memset( &buffer, 0, sizeof( buffer ) );
+		out_file.open( out_file_name, std::ios_base::binary | std::ios::out );
+		long long int last = 0;
+		if( out_file.is_open() ) {
+			out_file.seekp(0, std::ios_base::beg);
+			while ( static_cast<long long int>( file.tellg() ) != current_end && file.read( buffer, max_buffer_size ) ) {
+				out_file.write( buffer, sizeof( buffer ) );
+				memset( &buffer, 0, sizeof( buffer ) );
+				last = file.tellg();
+			}
+			if ( size % last == 1 ) {
+				file.read( buffer, sizeof( char ) );
+				out_file.write( buffer, sizeof( char ) );
+			}
+
 		}
+		std::cout << "file.tellg() " << last << std::endl;
 		out_file.close();
 		auto end = std::chrono::high_resolution_clock::now();
 		std::cout << std::chrono::duration_cast<std::chrono::seconds>( end - begin ).count() << " s" << std::endl;
@@ -105,36 +129,14 @@ std::vector<std::string> chunk_file( const int chunks, const std::string file_pa
 }
 
 int main( void ) {
-	const int chunks = 6;
-	const std::string file_path = "/Users/matthewmoore/Desktop/silicon_valley.mov";
+	const int chunks = 3;
+	const std::string file_path = "/home/matt/Desktop/sample.mp4";
 	std::vector<std::string> paths = chunk_file( chunks, file_path );
 	std::vector<std::thread> threads{};
 	for( const auto& path : paths ) {
 		std::cout << path << std::endl;
 	}
-	// Seek to beginning of file
-	// From beginning of file to ( index * size ) / chunks, write chars to file
-	// When you reach temp end, open a new file, and from where you already are start writing characters to new file
-	// repeat every ( index * size ) / chunks
 
-//	std::cout << wiringPiSetupGpio() << std::endl;
-//	const int send_fd = create_connection();
-//	std::cout << "send_fd " << send_fd << std::endl;
-//	std::this_thread::sleep_for( std::chrono::seconds( 15 ) );
-//
-//	while( true ) {
-//		// TODO Use signal interrupts
-//		if( digitalRead( 7 ) ) {
-//			system( take_video );
-//			std::vector<std::string> paths = chunk_file( 6, video_path );
-			for( const auto& path : paths ) {
-				
-			}
-//			std::cout << "Motion detected!" << std::endl;
-//			break;
-//		}
-//		std::this_thread::sleep_for( std::chrono::milliseconds( 1500 ) );
-  //      }
 	return 0;
 }
 
@@ -169,6 +171,7 @@ int main( void ) {
 //            react_to_motion( send_fd );
 //            break;
 //        }
+//        std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
 //    }
 //    return 0;
 //}
