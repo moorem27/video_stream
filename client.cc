@@ -42,7 +42,7 @@ int create_connection() {
 } 	
 
 
-
+// TODO Take in a port number to create a unique connection
 void send_chunk( const std::string file_path ) {
 	const int send_fd = create_connection();
 	std::vector<char> buffer( send_size, 0 );
@@ -91,12 +91,8 @@ std::vector<std::string> chunk_file( const int chunks, const std::string file_pa
 
 	std::cout << "max_buffer_size: " << max_buffer_size << std::endl;
 
-
-
-    std::cout << "chunk % buffer: " << max_buffer_size << std::endl;
 	for( int i = 1; i <= chunks; ++i ) {
-
-
+		std::cout << "i = " << i << std::endl;
 		char buffer[ max_buffer_size ];
 		memset( &buffer, 0, sizeof( buffer ) );
 
@@ -112,11 +108,12 @@ std::vector<std::string> chunk_file( const int chunks, const std::string file_pa
 
 		if( out_file.is_open() ) {
 			out_file.seekp(0, std::ios_base::beg);
-			while ( static_cast<long long int>( file.tellg() ) != current_end && file.read( buffer, max_buffer_size ) ) {
+			while ( static_cast<long long int>( file.tellg() ) <= current_end && file.read( buffer, max_buffer_size ) ) {
 				out_file.write( buffer, sizeof( buffer ) );
 				memset( &buffer, 0, sizeof( buffer ) );
 				last = file.tellg();
 			}
+
 			if ( size % last == 1 ) {
 				file.read( buffer, sizeof( char ) );
 				out_file.write( buffer, sizeof( char ) );
@@ -140,9 +137,9 @@ void combine_files( const std::vector<std::string>& paths, const std::string out
 	}
 }
 
-int main( void ) {
+int test_chunks( void ) {
 	const int chunks = 3;
-	const std::string file_path = "/home/matt/Desktop/wife_and_kayla.mp4";
+	const std::string file_path = "/home/matt/Desktop/arma.mp4";
 	auto begin = std::chrono::high_resolution_clock::now();
 	std::vector<std::string> paths = chunk_file( chunks, file_path );
 	auto end = std::chrono::high_resolution_clock::now();
@@ -173,7 +170,7 @@ int main( void ) {
 //
 //
 //
-//int main( void ) {
+int main( void ) {
 //    std::cout << wiringPiSetupGpio() << std::endl;
 //    const int send_fd = create_connection();
 //    std::cout << "send_fd " << send_fd << std::endl;
@@ -187,8 +184,9 @@ int main( void ) {
 //        }
 //        std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
 //    }
-//    return 0;
-//}
+	test_chunks();
+    return 0;
+}
 
 
 
