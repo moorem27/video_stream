@@ -21,6 +21,24 @@ namespace {
 	const std::string video_path = "/home/pi/samsung/video.h264";
 	const std::string pic_path = "/home/pi/samsung/motion_pic.jpg";
 	const int send_size = 163840;
+	const int max_buffer_size = 20000;
+	char buffer[ max_buffer_size ];
+}
+
+std::string get_extension( const std::string file_path ) {
+	size_t last_index = file_path.find_last_of( "." );
+	std::string extension = file_path.substr( last_index, file_path.length() );
+	return extension;
+}
+
+std::string remove_extension( const std::string file_path ) {
+	size_t dot = file_path.find_last_of( "." );
+	if ( dot == std::string::npos ) return file_path;
+	return file_path.substr( 0, dot );
+}
+
+std::string clone_name( const std::string file_path ) {
+	return remove_extension( file_path ) + "_clone" + get_extension( file_path );
 }
 
 int create_connection() {
@@ -65,7 +83,8 @@ void send_chunk( const std::string file_path ) {
 std::vector<std::string> chunk_file( const int chunks, const std::string file_path ) {
 	std::ifstream file;
 	std::vector<std::string> paths{};
-
+	std::string extension = get_extension( file_path );
+	std::string file_name = remove_extension( file_path );
 	// Open binary file
 	file.open( file_path, std::ios_base::binary );
 
@@ -80,25 +99,23 @@ std::vector<std::string> chunk_file( const int chunks, const std::string file_pa
 
 	// Chunk size = total size / num chunks
     long long int chunk_size = size/chunks;
-	std::cout << "Chunk size: " << chunk_size << std::endl;
+	std::cout << "Number of chunks: " << chunks << std::endl;
+	std::cout << "Individual chunk size: " << chunk_size << std::endl;
 
 	// Start max buffer size at arbitrarily large number
-	int max_buffer_size = 10000;
 
-	std::cout << "max_buffer_size: " << max_buffer_size << std::endl;
+	std::cout << "Read buffer size: " << max_buffer_size << std::endl;
 	long long int last = 0;
 	long long int next = max_buffer_size;
 
 	// For each chunk, do:
 	for( int i = 1; i <= chunks; ++i ) {
-		std::cout << "i = " << i << std::endl;
-		char buffer[ max_buffer_size ];
 		memset( &buffer, 0, sizeof( buffer ) );
 
 		// Calculate the end, in bytes, of the current chunk
 		long long int current_end = ( ( i * size ) / chunks );
 		std::ostringstream out_file_path;
-		out_file_path << "/Users/matthewmoore/Desktop/chunk" << i << ".mov";
+		out_file_path << file_name << i << extension;
 		std::string out_file_name( out_file_path.str() );
 		paths.push_back( out_file_name );
 		std::ofstream out_file;
@@ -114,9 +131,6 @@ std::vector<std::string> chunk_file( const int chunks, const std::string file_pa
 				next += max_buffer_size;
 			}
 			memset( &buffer, 0, sizeof( buffer ) );
-			std::cout << "last        = " << last << std::endl;
-			std::cout << "next        = " << next << std::endl;
-			std::cout << "current_end = " << current_end << std::endl;
 
 			if( current_end - last > 0 ) {
 				last = file.tellg();
@@ -128,14 +142,10 @@ std::vector<std::string> chunk_file( const int chunks, const std::string file_pa
 			}
 			next += max_buffer_size;
 		}
-
-		std::cout << "final last        = " << last << std::endl;
-		std::cout << "final next        = " << next << std::endl;
-		std::cout << "final current_end = " << current_end << std::endl;
 		out_file.close();
-
+		std::cout << '\r' << "Bytes chunked " << last << " bytes" << std::flush;
 	}
-
+	std::cout << '\n' << std::endl;
 	return paths;	
 }
 
@@ -148,15 +158,13 @@ void combine_files( const std::vector<std::string>& paths, const std::string out
 	}
 }
 
-int test_chunks( void ) {
-	const int chunks = 4;
-	const std::string file_path = "/Users/matthewmoore/Desktop/silicon_valley.mov";
+int test_chunks( const std::string& file_path, const int chunks ) {
 	auto begin = std::chrono::high_resolution_clock::now();
 	std::vector<std::string> paths = chunk_file( chunks, file_path );
 	auto end = std::chrono::high_resolution_clock::now();
 	std::cout << std::chrono::duration_cast<std::chrono::seconds>( end - begin ).count() << " s" << std::endl;
-
-	combine_files( paths, "/Users/matthewmoore/Desktop/example.mov" );
+	std::string new_name = clone_name( file_path );
+	combine_files( paths, new_name );
 
 
 	return 0;
@@ -195,7 +203,7 @@ int main( void ) {
 //        }
 //        std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
 //    }
-	test_chunks();
+	test_chunks("/Users/matthewmoore/Desktop/silicon_valley.mov", 5);
     return 0;
 }
 
