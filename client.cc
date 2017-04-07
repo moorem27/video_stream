@@ -21,7 +21,7 @@ namespace {
 	const std::string video_path = "/home/pi/samsung/video.h264";
 	const std::string pic_path = "/home/pi/samsung/motion_pic.jpg";
 	const int send_size = 163840;
-	const int max_buffer_size = 20000;
+	const int max_buffer_size = send_size;
 	char buffer[ max_buffer_size ];
 }
 
@@ -37,10 +37,15 @@ std::string remove_extension( const std::string file_path ) {
 	return file_path.substr( 0, dot );
 }
 
-std::string clone_name( const std::string file_path ) {
+std::string clone_name( const std::string& file_path ) {
 	return remove_extension( file_path ) + "_clone" + get_extension( file_path );
 }
 
+void erase_chunks( const std::vector<std::string> paths ) {
+    for( const auto& path : paths ) {
+        std::remove( path.c_str() );
+    }
+}
 int create_connection() {
 	struct sockaddr_in server_connection{};
 	int file_descriptor = socket( PF_INET, SOCK_STREAM, 0 );
@@ -53,7 +58,7 @@ int create_connection() {
 	int timeout = 0;
 	while( ++timeout < 100 ) {
 		connect( file_descriptor, reinterpret_cast<struct sockaddr*>( &server_connection ), sizeof( server_connection ) );
-		}
+    }
 	
 	setsockopt( file_descriptor, SOL_SOCKET, SO_SNDBUF, &send_size, sizeof( send_size ) );
 	return file_descriptor;
@@ -64,7 +69,6 @@ int create_connection() {
 void send_chunk( const std::string file_path ) {
 	const int send_fd = create_connection();
 	std::vector<char> buffer( send_size, 0 );
-	std::cout << "Finished taking video" << std::endl;
 	std::ifstream file( file_path, std::ios_base::binary | std::ios::ate );
 	file.seekg( 0, std::ios::beg );
 
@@ -73,7 +77,6 @@ void send_chunk( const std::string file_path ) {
 			std::cout << "Send failed" << std::endl;
 		std::fill( buffer.begin(), buffer.end(), 0 );
 	}
-	std::cout << "Finished sending video" << std::endl;
 	file.close();
 	system( remove_video );
 }
@@ -85,6 +88,7 @@ std::vector<std::string> chunk_file( const int chunks, const std::string file_pa
 	std::vector<std::string> paths{};
 	std::string extension = get_extension( file_path );
 	std::string file_name = remove_extension( file_path );
+
 	// Open binary file
 	file.open( file_path, std::ios_base::binary );
 
@@ -112,8 +116,9 @@ std::vector<std::string> chunk_file( const int chunks, const std::string file_pa
 	for( int i = 1; i <= chunks; ++i ) {
 		memset( &buffer, 0, sizeof( buffer ) );
 
-		// Calculate the end, in bytes, of the current chunk
+		// Calculate the ending byte of the current chunk
 		long long int current_end = ( ( i * size ) / chunks );
+
 		std::ostringstream out_file_path;
 		out_file_path << file_name << i << extension;
 		std::string out_file_name( out_file_path.str() );
@@ -122,7 +127,7 @@ std::vector<std::string> chunk_file( const int chunks, const std::string file_pa
 		out_file.open( out_file_name, std::ios_base::binary | std::ios::out );
 
 		if( out_file.is_open() ) {
-			out_file.seekp(0, std::ios_base::beg);
+			out_file.seekp( 0, std::ios_base::beg );
 			while ( next < current_end && last < current_end ) {
 				file.read( buffer, max_buffer_size );
 				out_file.write( buffer, sizeof( buffer ) );
@@ -146,6 +151,7 @@ std::vector<std::string> chunk_file( const int chunks, const std::string file_pa
 		std::cout << '\r' << "Bytes chunked: " << last << std::flush;
 	}
 	std::cout << '\n' << std::endl;
+    if( last == size ) std::cout << "Chunked all bytes successfully!" << std::endl;
 	return paths;	
 }
 
@@ -161,12 +167,11 @@ void combine_files( const std::vector<std::string>& paths, const std::string out
 int test_chunks( const std::string& file_path, const int chunks ) {
 	auto begin = std::chrono::high_resolution_clock::now();
 	std::vector<std::string> paths = chunk_file( chunks, file_path );
-	auto end = std::chrono::high_resolution_clock::now();
-	std::cout << std::chrono::duration_cast<std::chrono::seconds>( end - begin ).count() << " s" << std::endl;
 	std::string new_name = clone_name( file_path );
 	combine_files( paths, new_name );
-
-
+    erase_chunks( paths );
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << std::chrono::duration_cast<std::chrono::seconds>( end - begin ).count() << " s" << std::endl;
 	return 0;
 }
 
@@ -203,7 +208,7 @@ int main( void ) {
 //        }
 //        std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
 //    }
-	test_chunks("/Users/matthewmoore/Desktop/silicon_valley.mov", 5);
+	test_chunks("/Users/matthewmoore/Desktop/security.mp4", 5);
     return 0;
 }
 
