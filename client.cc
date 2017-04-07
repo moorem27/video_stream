@@ -143,7 +143,7 @@ std::vector<std::string> chunk_file( const int chunks, const std::string file_pa
 			next += max_buffer_size;
 		}
 		out_file.close();
-		std::cout << '\r' << "Bytes chunked " << last << std::flush;
+		std::cout << '\r' << "Bytes chunked: " << last << std::flush;
 	}
 	std::cout << '\n' << std::endl;
 	return paths;	
