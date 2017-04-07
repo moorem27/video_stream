@@ -85,42 +85,53 @@ std::vector<std::string> chunk_file( const int chunks, const std::string file_pa
 	// Start max buffer size at arbitrarily large number
 	int max_buffer_size = 10000;
 
-	// Reach a buffer size the will divide evenly into the chunk size
-	while( chunk_size % max_buffer_size != 0 )
-		max_buffer_size--;
-
 	std::cout << "max_buffer_size: " << max_buffer_size << std::endl;
+	long long int last = 0;
+	long long int next = max_buffer_size;
 
+	// For each chunk, do:
 	for( int i = 1; i <= chunks; ++i ) {
 		std::cout << "i = " << i << std::endl;
 		char buffer[ max_buffer_size ];
 		memset( &buffer, 0, sizeof( buffer ) );
 
+		// Calculate the end, in bytes, of the current chunk
 		long long int current_end = ( ( i * size ) / chunks );
-		std::cout << "current_end: " << current_end << std::endl;
 		std::ostringstream out_file_path;
-		out_file_path << "/home/matt/Desktop/chunk" << i << ".mp4";
+		out_file_path << "/Users/matthewmoore/Desktop/chunk" << i << ".mov";
 		std::string out_file_name( out_file_path.str() );
 		paths.push_back( out_file_name );
 		std::ofstream out_file;
 		out_file.open( out_file_name, std::ios_base::binary | std::ios::out );
-		long long int last = 0;
 
 		if( out_file.is_open() ) {
 			out_file.seekp(0, std::ios_base::beg);
-			while ( static_cast<long long int>( file.tellg() ) <= current_end && file.read( buffer, max_buffer_size ) ) {
+			while ( next < current_end && last < current_end ) {
+				file.read( buffer, max_buffer_size );
 				out_file.write( buffer, sizeof( buffer ) );
 				memset( &buffer, 0, sizeof( buffer ) );
 				last = file.tellg();
+				next += max_buffer_size;
 			}
+			memset( &buffer, 0, sizeof( buffer ) );
+			std::cout << "last        = " << last << std::endl;
+			std::cout << "next        = " << next << std::endl;
+			std::cout << "current_end = " << current_end << std::endl;
 
-			if ( size % last == 1 ) {
-				file.read( buffer, sizeof( char ) );
-				out_file.write( buffer, sizeof( char ) );
+			if( current_end - last > 0 ) {
+				last = file.tellg();
+				while( last != current_end ) {
+					file.read( buffer, sizeof( char ) );
+					out_file.write( buffer, sizeof( char ) );
+					last = file.tellg();
+				}
 			}
-
+			next += max_buffer_size;
 		}
-		std::cout << "file.tellg() " << last << std::endl;
+
+		std::cout << "final last        = " << last << std::endl;
+		std::cout << "final next        = " << next << std::endl;
+		std::cout << "final current_end = " << current_end << std::endl;
 		out_file.close();
 
 	}
@@ -138,14 +149,14 @@ void combine_files( const std::vector<std::string>& paths, const std::string out
 }
 
 int test_chunks( void ) {
-	const int chunks = 3;
-	const std::string file_path = "/home/matt/Desktop/arma.mp4";
+	const int chunks = 4;
+	const std::string file_path = "/Users/matthewmoore/Desktop/silicon_valley.mov";
 	auto begin = std::chrono::high_resolution_clock::now();
 	std::vector<std::string> paths = chunk_file( chunks, file_path );
 	auto end = std::chrono::high_resolution_clock::now();
 	std::cout << std::chrono::duration_cast<std::chrono::seconds>( end - begin ).count() << " s" << std::endl;
 
-	combine_files( paths, "/home/matt/Desktop/example.mp4" );
+	combine_files( paths, "/Users/matthewmoore/Desktop/example.mov" );
 
 
 	return 0;
