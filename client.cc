@@ -20,7 +20,7 @@ namespace {
 	const char* remove_pic = "rm /home/pi/samsung/motion_pic.jpg";
 	const std::string video_path = "/home/pi/samsung/video.h264";
 	const std::string pic_path = "/home/pi/samsung/motion_pic.jpg";
-	const int send_size = 163840;
+	const int send_size = 50000;
 	const int max_buffer_size = send_size;
 	char buffer[ max_buffer_size ];
 }
@@ -82,80 +82,98 @@ void send_chunk( const std::string file_path ) {
 }
 
 
-// TODO Use vector for dynamically sizeable buffer
+// TODO Refactor this monstrosity some day
 std::vector<std::string> chunk_file( const int chunks, const std::string file_path ) {
-	std::ifstream file;
-	std::vector<std::string> paths{};
-	std::string extension = get_extension( file_path );
-	std::string file_name = remove_extension( file_path );
+    if( !file_path.empty() && chunks > 0 ) {
+        std::ifstream file;
+        std::vector<std::string> paths{};
+        std::string extension = get_extension(file_path);
+        std::string file_name = remove_extension(file_path);
 
-	// Open binary file
-	file.open( file_path, std::ios_base::binary );
+        // Open the file to be read as a binary file
+        file.open(file_path, std::ios_base::binary);
 
-	// Seek to end
-	file.seekg( 0, std::ifstream::end );
+        // Seek to position counter to end to grab size
+        file.seekg(0, std::ifstream::end);
 
-	// Grab character position
-	long long int size = file.tellg();
-	std::cout << "Total file size: " << size << std::endl;
-	// Seek back to beginning;
-	file.seekg( 0, std::ifstream::beg );
+        // Grab total file size
+        long long int size = file.tellg();
+        std::cout << "Total file size: " << size << std::endl;
 
-	// Chunk size = total size / num chunks
-    long long int chunk_size = size/chunks;
-	std::cout << "Number of chunks: " << chunks << std::endl;
-	std::cout << "Individual chunk size: " << chunk_size << std::endl;
+        // Seek back to beginning;
+        file.seekg(0, std::ifstream::beg);
 
-	// Start max buffer size at arbitrarily large number
+        // Calculate chunk size
+        long long int chunk_size = size / chunks;
 
-	std::cout << "Read buffer size: " << max_buffer_size << std::endl;
-	long long int last = 0;
-	long long int next = max_buffer_size;
+        // Last = the last amount of bytes read
+        long long int last = 0;
 
-	// For each chunk, do:
-	for( int i = 1; i <= chunks; ++i ) {
-		memset( &buffer, 0, sizeof( buffer ) );
+        // Next = how many bytes will be read
+        long long int next = max_buffer_size;
 
-		// Calculate the ending byte of the current chunk
-		long long int current_end = ( ( i * size ) / chunks );
+        std::cout << "Number of chunks: " << chunks << std::endl;
+        std::cout << "Individual chunk size: " << chunk_size << std::endl;
+        std::cout << "Read buffer size: " << max_buffer_size << std::endl;
 
-		std::ostringstream out_file_path;
-		out_file_path << file_name << i << extension;
-		std::string out_file_name( out_file_path.str() );
-		paths.push_back( out_file_name );
-		std::ofstream out_file;
-		out_file.open( out_file_name, std::ios_base::binary | std::ios::out );
+        // For each chunk, do:
+        for (int i = 1; i <= chunks; ++i) {
+            memset(&buffer, 0, sizeof(buffer));
 
-		if( out_file.is_open() ) {
-			out_file.seekp( 0, std::ios_base::beg );
-			while ( next < current_end && last < current_end ) {
-				file.read( buffer, max_buffer_size );
-				out_file.write( buffer, sizeof( buffer ) );
-				memset( &buffer, 0, sizeof( buffer ) );
-				last = file.tellg();
-				next += max_buffer_size;
-			}
-			memset( &buffer, 0, sizeof( buffer ) );
+            // Calculate the ending byte of the current chunk
+            long long int current_end = ((i * size) / chunks);
 
-			if( current_end - last > 0 ) {
-				last = file.tellg();
-				while( last != current_end ) {
-					file.read( buffer, sizeof( char ) );
-					out_file.write( buffer, sizeof( char ) );
-					last = file.tellg();
-				}
-			}
-			next += max_buffer_size;
-		}
-		out_file.close();
-		std::cout << '\r' << "Bytes chunked: " << last << std::flush;
-	}
-	std::cout << '\n' << std::endl;
-    if( last == size ) std::cout << "Chunked all bytes successfully!" << std::endl;
-	return paths;	
+            // Create chunk file name and push to the vector of chunk names
+            std::ostringstream out_file_path;
+            out_file_path << file_name << i << extension;
+            std::string out_file_name(out_file_path.str());
+            paths.push_back(out_file_name);
+
+            // Open output file
+            std::ofstream out_file;
+            out_file.open(out_file_name, std::ios_base::binary | std::ios::out);
+
+            if (out_file.is_open()) {
+                out_file.seekp(0, std::ios_base::beg);
+
+                // Ensure that calling read won't put us past the current chunk length by checking next vs current_end
+                while (next < current_end && last < current_end) {
+                    file.read(buffer, max_buffer_size);
+                    out_file.write(buffer, sizeof(buffer));
+                    memset(&buffer, 0, sizeof(buffer));
+                    last = file.tellg();
+                    next += max_buffer_size;
+                }
+                memset(&buffer, 0, sizeof(buffer));
+
+                // If there are still bytes to be read:
+                if (current_end - last > 0) {
+                    last = file.tellg();
+                    // Read them in one character at a time until current chunk length TODO: Make this great again?
+                    while (last != current_end) {
+                        file.read(buffer, sizeof(char));
+                        out_file.write(buffer, sizeof(char));
+                        last = file.tellg();
+                    }
+                }
+
+                // Increment next by max_buffer_size for the next iteration
+                next += max_buffer_size;
+            }
+            out_file.close();
+            std::cout << '\r' << "Bytes chunked: " << last << std::flush;
+        }
+        std::cout << '\n' << std::endl;
+
+        if (last == size) std::cout << "Chunked all bytes successfully!" << std::endl;
+
+        return paths;
+    } else {
+        return {};
+    }
 }
 
-void combine_files( const std::vector<std::string>& paths, const std::string out_path ) {
+void create_file_from_chunks(const std::vector<std::string> &paths, const std::string out_path) {
 	std::ofstream output( out_path, std::ios_base::binary | std::ios::out );
 
 	for( const auto& path : paths ) {
@@ -168,10 +186,14 @@ int test_chunks( const std::string& file_path, const int chunks ) {
 	auto begin = std::chrono::high_resolution_clock::now();
 	std::vector<std::string> paths = chunk_file( chunks, file_path );
 	std::string new_name = clone_name( file_path );
-	combine_files( paths, new_name );
+    create_file_from_chunks( paths, new_name );
+
+    // Comment this out to leave chunks in place
     erase_chunks( paths );
+    // -----------------------------------------
+
     auto end = std::chrono::high_resolution_clock::now();
-    std::cout << std::chrono::duration_cast<std::chrono::seconds>( end - begin ).count() << " s" << std::endl;
+    std::cout << "Chunking took: " << std::chrono::duration_cast<std::chrono::seconds>( end - begin ).count() << " s" << std::endl;
 	return 0;
 }
 
@@ -208,7 +230,7 @@ int main( void ) {
 //        }
 //        std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
 //    }
-	test_chunks("/Users/matthewmoore/Desktop/security.mp4", 5);
+	test_chunks("/Users/matthewmoore/Desktop/network.pdf", 10);
     return 0;
 }
 
