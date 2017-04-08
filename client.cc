@@ -18,6 +18,7 @@ namespace {
     const std::string video_path = "/home/pi/samsung/video.h264";
     const std::string pic_path = "/home/pi/samsung/motion_pic.jpg";
     const int send_size = 163840;
+    std::string server_IP{};
 }
 
 int create_connection() {
@@ -26,7 +27,7 @@ int create_connection() {
 
     memset( &server_connection, 0, sizeof( server_connection ) );
     server_connection.sin_family = AF_INET;
-    server_connection.sin_addr.s_addr = inet_addr( "192.168.1.3" ); // Server address
+    server_connection.sin_addr.s_addr = inet_addr( server_IP.c_str() ); // Server address
     server_connection.sin_port = htons( 8888 );
 
     int timeout = 0;
@@ -39,7 +40,7 @@ int create_connection() {
 }
 
 
-
+// TODO: Refactor and use file chunking and networking libraries
 void react_to_motion( const int send_fd ) {
     std::vector<char> buffer( send_size, 0 );
     system( take_video );
@@ -57,8 +58,9 @@ void react_to_motion( const int send_fd ) {
 }
 
 
-
-int main( void ) {
+// TODO: Make this event based instead of polling
+int main( int argc, char* argv[] ) {
+    server_IP = argv[ 1 ];
 //    std::cout << wiringPiSetupGpio() << std::endl;
 //    const int send_fd = create_connection();
 //    std::cout << "send_fd " << send_fd << std::endl;
