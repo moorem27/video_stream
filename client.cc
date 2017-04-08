@@ -8,214 +8,56 @@
 #include <stdlib.h>
 #include <thread>
 #include <chrono>
-#include <sstream>
 //#include <wiringPi.h>
 
-
-// TODO Move all helper functions into a library file
 namespace {
-	const char* take_picture = "raspistill -o /home/pi/samsung/motion_pic.jpg";
-	const char* take_video = "raspivid -o /home/pi/samsung/video.h264 -t 30000 -d";
-	const char* remove_video = "rm /home/pi/samsung/video.h264";
-	const char* remove_pic = "rm /home/pi/samsung/motion_pic.jpg";
-	const std::string video_path = "/home/pi/samsung/video.h264";
-	const std::string pic_path = "/home/pi/samsung/motion_pic.jpg";
-	const int send_size = 50000;
-	const int max_buffer_size = send_size;
-	char buffer[ max_buffer_size ];
+    const char* take_picture = "raspistill -o /home/pi/samsung/motion_pic.jpg";
+    const char* take_video = "raspivid -o /home/pi/samsung/video.h264 -t 30000 -d";
+    const char* remove_video = "rm /home/pi/samsung/video.h264";
+    const char* remove_pic = "rm /home/pi/samsung/motion_pic.jpg";
+    const std::string video_path = "/home/pi/samsung/video.h264";
+    const std::string pic_path = "/home/pi/samsung/motion_pic.jpg";
+    const int send_size = 163840;
 }
 
-std::string get_extension( const std::string file_path ) {
-	size_t last_index = file_path.find_last_of( "." );
-	std::string extension = file_path.substr( last_index, file_path.length() );
-	return extension;
-}
-
-std::string remove_extension( const std::string file_path ) {
-	size_t dot = file_path.find_last_of( "." );
-	if ( dot == std::string::npos ) return file_path;
-	return file_path.substr( 0, dot );
-}
-
-std::string clone_name( const std::string& file_path ) {
-	return remove_extension( file_path ) + "_clone" + get_extension( file_path );
-}
-
-void erase_chunks( const std::vector<std::string> paths ) {
-    for( const auto& path : paths ) {
-        std::remove( path.c_str() );
-    }
-}
 int create_connection() {
-	struct sockaddr_in server_connection{};
-	int file_descriptor = socket( PF_INET, SOCK_STREAM, 0 );
+    struct sockaddr_in server_connection{};
+    int file_descriptor = socket( PF_INET, SOCK_STREAM, 0 );
 
-	memset( &server_connection, 0, sizeof( server_connection ) );
-	server_connection.sin_family = AF_INET;
-	server_connection.sin_addr.s_addr = inet_addr( "192.168.1.3" );
-	server_connection.sin_port = htons( 8888 );
+    memset( &server_connection, 0, sizeof( server_connection ) );
+    server_connection.sin_family = AF_INET;
+    server_connection.sin_addr.s_addr = inet_addr( "192.168.1.3" ); // Server address
+    server_connection.sin_port = htons( 8888 );
 
-	int timeout = 0;
-	while( ++timeout < 100 ) {
-		connect( file_descriptor, reinterpret_cast<struct sockaddr*>( &server_connection ), sizeof( server_connection ) );
+    int timeout = 0;
+    while( ++timeout < 100 ) {
+        connect( file_descriptor, reinterpret_cast<struct sockaddr*>( &server_connection ), sizeof( server_connection ) );
     }
-	
-	setsockopt( file_descriptor, SOL_SOCKET, SO_SNDBUF, &send_size, sizeof( send_size ) );
-	return file_descriptor;
-} 	
 
-
-// TODO Take in a port number to create a unique connection
-void send_chunk( const std::string file_path ) {
-	const int send_fd = create_connection();
-	std::vector<char> buffer( send_size, 0 );
-	std::ifstream file( file_path, std::ios_base::binary | std::ios::ate );
-	file.seekg( 0, std::ios::beg );
-
-	while( file.read( buffer.data(), buffer.size() ) ) {
-		if( send( send_fd, static_cast<void *>( buffer.data() ), buffer.size(), 0 ) < 0 )
-			std::cout << "Send failed" << std::endl;
-		std::fill( buffer.begin(), buffer.end(), 0 );
-	}
-	file.close();
-	system( remove_video );
+    setsockopt( file_descriptor, SOL_SOCKET, SO_SNDBUF, &send_size, sizeof( send_size ) );
+    return file_descriptor;
 }
 
 
-// TODO Refactor this monstrosity some day
-std::vector<std::string> chunk_file( const int chunks, const std::string file_path ) {
-    if( !file_path.empty() && chunks > 0 ) {
-        std::ifstream file;
-        std::vector<std::string> paths{};
-        std::string extension = get_extension(file_path);
-        std::string file_name = remove_extension(file_path);
 
-        // Open the file to be read as a binary file
-        file.open(file_path, std::ios_base::binary);
+void react_to_motion( const int send_fd ) {
+    std::vector<char> buffer( send_size, 0 );
+    system( take_video );
+    std::cout << "Finished taking video" << std::endl;
+    std::ifstream file( video_path.c_str(), std::ios_base::binary | std::ios::ate );
+    file.seekg( 0, std::ios::beg );
 
-        // Seek to position counter to end to grab size
-        file.seekg(0, std::ifstream::end);
-
-        // Grab total file size
-        long long int size = file.tellg();
-        std::cout << "Total file size: " << size << std::endl;
-
-        // Seek back to beginning;
-        file.seekg(0, std::ifstream::beg);
-
-        // Calculate chunk size
-        long long int chunk_size = size / chunks;
-
-        // Last = the last amount of bytes read
-        long long int last = 0;
-
-        // Next = how many bytes will be read
-        long long int next = max_buffer_size;
-
-        std::cout << "Number of chunks: " << chunks << std::endl;
-        std::cout << "Individual chunk size: " << chunk_size << std::endl;
-        std::cout << "Read buffer size: " << max_buffer_size << std::endl;
-
-        // For each chunk, do:
-        for (int i = 1; i <= chunks; ++i) {
-            memset(&buffer, 0, sizeof(buffer));
-
-            // Calculate the ending byte of the current chunk
-            long long int current_end = ((i * size) / chunks);
-
-            // Create chunk file name and push to the vector of chunk names
-            std::ostringstream out_file_path;
-            out_file_path << file_name << i << extension;
-            std::string out_file_name(out_file_path.str());
-            paths.push_back(out_file_name);
-
-            // Open output file
-            std::ofstream out_file;
-            out_file.open(out_file_name, std::ios_base::binary | std::ios::out);
-
-            if (out_file.is_open()) {
-                out_file.seekp(0, std::ios_base::beg);
-
-                // Ensure that calling read won't put us past the current chunk length by checking next vs current_end
-                while (next < current_end && last < current_end) {
-                    file.read(buffer, max_buffer_size);
-                    out_file.write(buffer, sizeof(buffer));
-                    memset(&buffer, 0, sizeof(buffer));
-                    last = file.tellg();
-                    next += max_buffer_size;
-                }
-                memset(&buffer, 0, sizeof(buffer));
-
-                // If there are still bytes to be read:
-                if (current_end - last > 0) {
-                    last = file.tellg();
-                    // Read them in one character at a time until current chunk length TODO: Make this great again?
-                    while (last != current_end) {
-                        file.read(buffer, sizeof(char));
-                        out_file.write(buffer, sizeof(char));
-                        last = file.tellg();
-                    }
-                }
-
-                // Increment next by max_buffer_size for the next iteration
-                next += max_buffer_size;
-            }
-            out_file.close();
-            std::cout << '\r' << "Bytes chunked: " << last << std::flush;
-        }
-        std::cout << '\n' << std::endl;
-
-        if (last == size) std::cout << "Chunked all bytes successfully!" << std::endl;
-
-        return paths;
-    } else {
-        return {};
+    while( file.read( buffer.data(), buffer.size() ) ) {
+        if( send( send_fd, static_cast<void *>( buffer.data() ), buffer.size(), 0 ) < 0 )
+            std::cout << "Send failed" << std::endl;
     }
+    std::cout << "Finished sending video" << std::endl;
+    file.close();
+    system( remove_video );
 }
 
-void create_file_from_chunks(const std::vector<std::string> &paths, const std::string out_path) {
-	std::ofstream output( out_path, std::ios_base::binary | std::ios::out );
 
-	for( const auto& path : paths ) {
-		std::ifstream file( path, std::ios_base::binary );
-		output << file.rdbuf();
-	}
-}
 
-int test_chunks( const std::string& file_path, const int chunks ) {
-	auto begin = std::chrono::high_resolution_clock::now();
-	std::vector<std::string> paths = chunk_file( chunks, file_path );
-	std::string new_name = clone_name( file_path );
-    create_file_from_chunks( paths, new_name );
-
-    // Comment this out to leave chunks in place
-    erase_chunks( paths );
-    // -----------------------------------------
-
-    auto end = std::chrono::high_resolution_clock::now();
-    std::cout << "Chunking took: " << std::chrono::duration_cast<std::chrono::seconds>( end - begin ).count() << " s" << std::endl;
-	return 0;
-}
-
-// TODO: In case things go horribly, horribly wrong...(like they are)
-//void react_to_motion( const int send_fd ) {
-//    std::vector<char> buffer( send_size, 0 );
-//    system( take_video );
-//    std::cout << "Finished taking video" << std::endl;
-//    std::ifstream file( video_path.c_str(), std::ios_base::binary | std::ios::ate );
-//    file.seekg( 0, std::ios::beg );
-//
-//    while( file.read( buffer.data(), buffer.size() ) ) {
-//        if( send( send_fd, static_cast<void *>( buffer.data() ), buffer.size(), 0 ) < 0 )
-//            std::cout << "Send failed" << std::endl;
-//    }
-//    std::cout << "Finished sending video" << std::endl;
-//    file.close();
-//    system( remove_video );
-//}
-//
-//
-//
 int main( void ) {
 //    std::cout << wiringPiSetupGpio() << std::endl;
 //    const int send_fd = create_connection();
@@ -230,9 +72,5 @@ int main( void ) {
 //        }
 //        std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
 //    }
-	test_chunks("/Users/matthewmoore/Desktop/network.pdf", 10);
     return 0;
 }
-
-
-
