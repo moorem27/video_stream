@@ -1,0 +1,36 @@
+language: cpp
+
+sudo: required
+dist: trusty
+os: linux
+
+notifications:
+  email: false
+
+compiler: g++
+
+env: BUILD_TYPE=cmake
+
+# FIXME: create scripts from these
+#        example: https://github.com/rubinius/rubinius/blob/master/.travis.yml
+before_script:
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+  - sudo apt-get -qq update
+  - sudo apt-get install -q -y cmake-data cmake
+  - sudo apt-get install -q -y g++-5
+  - export CXX="g++-5"
+  - cd /tmp
+  - wget https://github.com/zeromq/libzmq/releases/download/v4.2.2/zeromq-4.2.2.tar.gz
+  - tar xvf zeromq-4.2.2.tar.gz
+  - cd zeromq-4.2.2
+  - sudo ./configure
+  - sudo make -6
+  - sudo make install
+
+script:
+  - cmake --version
+  - cd $TRAVIS_BUILD_DIR
+  - mkdir build
+  - cd build;
+  - cmake ..
+  - make -j7
