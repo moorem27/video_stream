@@ -1,4 +1,4 @@
-# video_stream
+# video_stream [![Build Status](https://travis-ci.org/moorem27/video_stream.svg?branch=development)](https://travis-ci.org/moorem27/video_stream)
 
 # Dependencies
 1. gcc 5.4.0+
