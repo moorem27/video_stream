@@ -11,6 +11,8 @@ compiler: g++
 
 env: BUILD_TYPE=cmake
 
+# FIXME: create scripts from these
+#        example: https://github.com/rubinius/rubinius/blob/master/.travis.yml
 before_script:
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get -qq update
