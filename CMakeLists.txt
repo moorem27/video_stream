@@ -10,4 +10,7 @@ find_package( ZMQ REQUIRED )
 include_directories( include/ )
 
 add_executable( server server.cc )
+target_link_libraries( server ${ZMQ_LIBRARIES} )
+
 add_executable( client client.cc )
+target_link_libraries( client ${ZMQ_LIBRARIES} )
