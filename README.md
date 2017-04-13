@@ -22,7 +22,7 @@ make
 ```
 
 ## Change ZMQ version
-In order to change the installed version of ZMQ, change the version in the [defaults/main.yml](https://github.com/moorem27/video_stream/blob/master/roles/packages/defaults/main.yml) file:
+In order to change the installed version of ZMQ, change the version in the [defaults/main.yml](https://github.com/moorem27/video_stream/blob/development/roles/packages/defaults/main.yml) file:
 ```yaml
 # roles/packages/defaults/main.yml
 ---
