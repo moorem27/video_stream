@@ -1,0 +1,10 @@
+---
+zmq_version: 4.2.2
+zmq_full_name: "zeromq-{{ zmq_version}}"
+packages:
+  - build-essential # gcc, g++, make
+  - cmake
+  - gdb
+  - cgdb
+  - autoconf
+  - automake
