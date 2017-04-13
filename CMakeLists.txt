@@ -7,5 +7,7 @@ set( CMAKE_CXX_EXTENSIONS OFF )
 set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules" )
 find_package( ZMQ REQUIRED )
 
+include_directories( include/ )
+
 add_executable( server server.cc )
 add_executable( client client.cc )
