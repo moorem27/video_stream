@@ -8,12 +8,11 @@
 5. cppzmq 
 ## Set up on Raspberry Pi
 The image below is a useful reference for the pin layout and location of the camera module on  
-the Raspberry Pi.
+the Raspberry Pi.  
 ![](images/rp_pinout.png?raw=true)    
-We will be using the WiringPi library to control our motion sensor (wiringpi.com), and will  
-initialize wiringPi to use the BCM GPIO pins directly instead of using a virtual mapping. In
-our project GPIO pin 7 will be used for output from the sensor, power will be to 5V and ground
-can be anything (though for simplicity we keep everything on the same column).
+We will be using the WiringPi library to control our motion sensor (wiringpi.com), and will initialize wiringPi to use  
+the BCM GPIO pins directly instead of using a virtual mapping. In our project GPIO pin 7 will be used for output from  
+the sensor, power will be to 5V and ground can be anything (though for simplicity we keep everything on the same column).  
 ## How to Build Application
 TODO: make this into an ansible playbook
 ```bash
