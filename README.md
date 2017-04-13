@@ -7,8 +7,7 @@
 4. zeromq-4.2.2+
 5. cppzmq 
 ## Set up on Raspberry Pi
-The image below is a useful reference for the pin layout and location of the camera module on  
-the Raspberry Pi.  
+The image below is a useful reference for the pin layout and location of the camera module on the Raspberry Pi.  
 ![](images/rp_pinout.png?raw=true)    
 We will be using the WiringPi library to control our motion sensor (wiringpi.com), and will initialize wiringPi to use  
 the BCM GPIO pins directly instead of using a virtual mapping. In our project GPIO pin 7 will be used for output from  
