@@ -1,0 +1,21 @@
+---
+- name: "Download {{ zmq_full_name }} library"
+  get_url:
+    url: https://github.com/zeromq/libzmq/releases/download/v{{ zmq_version }}/{{ zmq_full_name }}.tar.gz
+    dest: /tmp
+
+- name: "Unarchive downloaded {{ zmq_full_name }} file"
+  unarchive:
+    src: /tmp/{{ zmq_full_name }}.tar.gz
+    dest: /opt
+
+- name: "Install {{ zmq_full_name }} libs"
+  shell: "cd /opt/{{ zmq_full_name }} && ./configure && make && make install"
+
+- name: "Get zmq c++ bindings"
+  get_url:
+    url: "{{ item }}"
+    dest: /usr/local/include/
+  with_items:
+    - https://raw.githubusercontent.com/zeromq/cppzmq/master/zmq.hpp
+    - https://raw.githubusercontent.com/zeromq/cppzmq/master/zmq_addon.hpp

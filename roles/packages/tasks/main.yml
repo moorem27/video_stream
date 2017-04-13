@@ -1,0 +1,17 @@
+---
+- name: Update all packages to the latest version
+  apt: upgrade="dist"
+
+- name: Install development packages
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items: "{{ packages }}"
+
+# FIXME: this is brittle 
+- name: Check if ZMQ lib exists
+  stat: path="/usr/local/lib/libzmq.so"
+  register: zmq
+
+- include: zmq.yml
+  when: zmq.stat.exists == False
