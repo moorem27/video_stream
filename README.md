@@ -5,8 +5,8 @@
 2. make 4.1+
 3. cmake 3.1.0+
 4. zeromq-4.2.2+
-5. cppzmq
-
+5. cppzmq  
+![](images/rp_pinout.png?raw=true)  
 ## How to Build Application
 TODO: make this into an ansible playbook
 ```bash
