@@ -7,6 +7,7 @@
 4. zeromq-4.2.2+
 5. cppzmq
 6. WiringPi
+
 ## Set up on Raspberry Pi
 The image below is a useful reference for the pin layout and location of the camera module on the Raspberry Pi.  
 ![](images/rp_pinout.png?raw=true)    
