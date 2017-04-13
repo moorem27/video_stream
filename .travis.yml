@@ -24,7 +24,7 @@ before_script:
   - tar xvf zeromq-4.2.2.tar.gz
   - cd zeromq-4.2.2
   - sudo ./configure
-  - sudo make -6
+  - sudo make -j7
   - sudo make install
 
 script:
