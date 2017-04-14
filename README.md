@@ -19,7 +19,17 @@ the sensor, power will be to 5V and ground can be any pin marked as ground (thou
 ## How to Run Application
 ```bash
 docker build -t videostream:latest .
-docker run -v /<videostream_project_dir>:/videostream -it videostream /bin/bash
+
+# Ensures that the project and /sys directories are exposed to the Docker container
+#
+# from larsks @ http://stackoverflow.com/questions/30059784/docker-access-to-raspberry-pi-gpio-pins
+# This would expose /sys on the host as /sys inside the container, and you would have access to the
+# /sys/class/gpio hierarchy.
+#
+# If you were using code that access the GPIO pins without using the sysfs interface you would need to
+# expose whatever device node it is using inside the container, possibly with something like the
+# --device argument to docker run.
+docker run -v /<videostream_project_dir>:/videostream -v /sys:/sys -it videostream /bin/bash
 ```
 
 ## How to Setup Development Environment
