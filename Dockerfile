@@ -1,5 +1,9 @@
 # For accessing Raspberry Pi's GPIO pins: http://stackoverflow.com/questions/30059784/docker-access-to-raspberry-pi-gpio-pins
 
+# Command Line Instructions:
+# docker build -t videostream:latest .
+# docker run -v /home/<user>/video_stream:/videostream -it videostream /bin/bash
+
 FROM ubuntu:16.04
 MAINTAINER Brandon Soto (brandon.soto09@gmail.com)
 
