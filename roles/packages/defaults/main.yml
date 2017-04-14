@@ -1,6 +1,11 @@
 ---
 zmq_version: 4.2.2
 zmq_full_name: "zeromq-{{ zmq_version}}"
+
+clion_version: "2017.1.1"
+clion_dir: "/opt/clion-{{ clion_version }}"
+clion_checksum: "sha256:9abd6bd38801ae6cf29db2cd133c700e8da11841093de872312fe33ed51309ae"
+
 packages:
   - build-essential # gcc, g++, make
   - cmake
@@ -8,3 +13,5 @@ packages:
   - cgdb
   - autoconf
   - automake
+  - xorg
+  - openbox

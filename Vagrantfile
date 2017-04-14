@@ -6,13 +6,17 @@ Vagrant.configure("2") do |config|
   config.vm.hostname = "videostream-dev"
   config.vm.network "private_network", ip: "172.28.128.42"
 
+  config.ssh.forward_agent = true
+  config.ssh.forward_x11 = true
+
   config.vm.provider "virtualbox" do |vb|
     vb.gui = true
-    vb.memory = "1024"
+    vb.memory = "2048"
     vb.name = "videostream-dev"
   end
 
   config.vm.provision "ansible_local" do |ansible|
     ansible.playbook = "create-vm.yml"
+    ansible.verbose = "vvvv"
   end
 end
