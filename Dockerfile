@@ -9,7 +9,7 @@ ADD https://raw.githubusercontent.com/zeromq/cppzmq/master/zmq_addon.hpp /usr/in
 
 RUN \
    apt-get -y update && \
-   apt-get -y install vim cmake build-essential wget && \
+   apt-get -y install vim cmake build-essential && \
    cd /tmp && \
    tar xvf zeromq-4.2.2.tar.gz && \
    cd zeromq-4.2.2 && ./configure && make && make install && \
