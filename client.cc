@@ -9,8 +9,10 @@
 #include <thread>
 #include <chrono>
 //#include <wiringPi.h>
+// bobo comment
 
 namespace {
+    // Change your file paths as necessary
     const char* take_picture = "raspistill -o /home/pi/samsung/motion_pic.jpg";
     const char* take_video = "raspivid -o /home/pi/samsung/video.h264 -t 30000 -d";
     const char* remove_video = "rm /home/pi/samsung/video.h264";
@@ -19,6 +21,7 @@ namespace {
     const std::string pic_path = "/home/pi/samsung/motion_pic.jpg";
     const int send_size = 163840;
     std::string server_IP{};
+    bool streaming = false;
 }
 
 int create_connection() {
@@ -55,6 +58,7 @@ void react_to_motion( const int send_fd ) {
     std::cout << "Finished sending video" << std::endl;
     file.close();
     system( remove_video );
+    streaming = false;
 }
 
 
@@ -66,13 +70,17 @@ int main( int argc, char* argv[] ) {
 //    std::cout << "send_fd " << send_fd << std::endl;
 //    std::this_thread::sleep_for( std::chrono::seconds( 15 ) );
 //
+//
 //    while( true ) {
-//        if( digitalRead( 7 ) ) {
-//            std::cout << "Motion detected!" << std::endl;
-//            react_to_motion( send_fd );
-//            break;
+//        if( !streaming ) {
+//            if ( digitalRead( 7 ) ) {
+//                streaming = true;
+//                std::cout << "Motion detected!" << std::endl;
+//                react_to_motion( send_fd );
+//                break;
+//            }
+//            std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
 //        }
-//        std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
 //    }
     return 0;
 }

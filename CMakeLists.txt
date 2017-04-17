@@ -1,7 +1,14 @@
-cmake_minimum_required( VERSION 3.5 )
-project( server_client )
+cmake_minimum_required( VERSION 3.1.0 FATAL_ERROR )
+project( server_client CXX )
 
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11" )
+set( CMAKE_CXX_STANDARD 11 )
+set( CMAKE_CXX_EXTENSIONS OFF )
 
-#add_executable( server server.cc )
+set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules" )
+find_package( ZMQ REQUIRED )
+
+add_executable( server server.cc )
+target_link_libraries( server ${ZMQ_LIBRARIES} )
+
 add_executable( client client.cc )
+target_link_libraries( client ${ZMQ_LIBRARIES} )

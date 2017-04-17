@@ -1,0 +1,22 @@
+---
+- name: Download CLion
+  get_url:
+    url: "https://download.jetbrains.com/cpp/CLion-{{ clion_version }}.tar.gz"
+    dest: /tmp
+    mode: 0755
+    checksum: "{{ clion_checksum }}"
+
+- name: Unarchive CLion
+  unarchive:
+    src: /tmp/CLion-{{ clion_version }}.tar.gz
+    dest: /opt
+    remote_src: True
+    mode: 0755
+
+- name: Create symbolic link to CLion binary
+  file:
+    src: "{{ clion_dir }}/bin/clion.sh"
+    dest: /usr/bin/clion
+    state: link
+  
+
