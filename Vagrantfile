@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "debian/jessie64"
+  config.vm.box = "bento/ubuntu-16.04"
   config.vm.hostname = "videostream-dev"
   config.vm.network "private_network", ip: "172.28.128.42"
 
@@ -15,7 +15,7 @@ Vagrant.configure("2") do |config|
     vb.name = "videostream-dev"
   end
 
-  config.vm.provision "ansible" do |ansible|
+  config.vm.provision "ansible_local" do |ansible|
     ansible.playbook = "create-vm.yml"
   end
 end
