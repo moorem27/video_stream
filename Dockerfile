@@ -20,7 +20,7 @@ RUN \
    cd wiringPi && \
    git pull origin && \
    /opt/wiringPi/build && \
-   rm -rf /var/lib/apt/lists/* && \
-   rm -rf /tmp/*
+   rm -rvf /var/lib/apt/lists/* && \
+   rm -rvf /tmp/*
 
 EXPOSE 4242
