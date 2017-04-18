@@ -1,0 +1,5 @@
+---
+- name: install wiring pi
+  shell: "./build"
+  args:
+    chdir: /opt/wiringPi

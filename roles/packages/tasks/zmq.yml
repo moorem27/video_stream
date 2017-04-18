@@ -1,16 +1,19 @@
 ---
 - name: "Download {{ zmq_full_name }} library"
   get_url:
-    url: https://github.com/zeromq/libzmq/releases/download/v{{ zmq_version }}/{{ zmq_full_name }}.tar.gz
+    url: "{{ zmq_url }}"
     dest: /tmp
 
 - name: "Unarchive downloaded {{ zmq_full_name }} file"
   unarchive:
     src: /tmp/{{ zmq_full_name }}.tar.gz
     dest: /opt
+    remote_src: yes
 
 - name: "Install {{ zmq_full_name }} libs"
-  shell: "cd /opt/{{ zmq_full_name }} && ./configure && make && make install"
+  shell: "./configure && make -j4 && make install"
+  args:
+    chdir: "/opt/{{ zmq_full_name }}"
 
 - name: "Get zmq c++ bindings"
   get_url:

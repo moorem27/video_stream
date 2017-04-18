@@ -7,12 +7,18 @@ ADD https://github.com/zeromq/libzmq/releases/download/v4.2.2/zeromq-4.2.2.tar.g
 ADD https://raw.githubusercontent.com/zeromq/cppzmq/master/zmq.hpp /usr/include
 ADD https://raw.githubusercontent.com/zeromq/cppzmq/master/zmq_addon.hpp /usr/include
 
+# FIXME: ffmpeg is not available on Debian 8 Jessie
+
 RUN \
    apt-get -y update && \
-   apt-get -y install vim cmake build-essential && \
+   apt-get -y install vim cmake build-essential git && \
    cd /tmp && \
    tar xvf zeromq-4.2.2.tar.gz && \
    cd zeromq-4.2.2 && ./configure && make -j4 && make install && \
+   cd /opt \
+   git clone git://git.drogon.net/wiringPi \
+   cd wiringPi \
+   git pull origin && ./build \
    rm -rf /var/lib/apt/lists/* && \
    rm -rf /tmp/*
 
