@@ -15,10 +15,11 @@ RUN \
    cd /tmp && \
    tar xvf zeromq-4.2.2.tar.gz && \
    cd zeromq-4.2.2 && ./configure && make -j4 && make install && \
-   cd /opt \
-   git clone git://git.drogon.net/wiringPi \
-   cd wiringPi \
-   git pull origin && ./build \
+   cd /opt && \
+   git clone git://git.drogon.net/wiringPi && \
+   cd wiringPi && \
+   git pull origin &&
+   /opt/wiringPi/build && \
    rm -rf /var/lib/apt/lists/* && \
    rm -rf /tmp/*
 
