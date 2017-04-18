@@ -18,7 +18,7 @@ RUN \
    cd /opt && \
    git clone git://git.drogon.net/wiringPi && \
    cd wiringPi && \
-   git pull origin &&
+   git pull origin && \
    /opt/wiringPi/build && \
    rm -rf /var/lib/apt/lists/* && \
    rm -rf /tmp/*
