@@ -22,7 +22,7 @@ the sensor, power will be to 5V and ground can be any pin marked as ground (thou
 # build & run server
 # NOTE: this will only build on x86/amd architectures
 docker build -f Dockerfile-server -t vs-server:latest .
-docker run /<videostream_project_dir>:/videostream -it vs-server /bin/bash
+docker run -v /<videostream_project_dir>:/videostream -it vs-server /bin/bash
 
 # build & run client
 # NOTE: this will only build on arm architectures
