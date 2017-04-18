@@ -29,7 +29,7 @@ docker build -t videostream:latest .
 # If you were using code that access the GPIO pins without using the sysfs interface you would need to
 # expose whatever device node it is using inside the container, possibly with something like the
 # --device argument to docker run.
-docker run -v /<videostream_project_dir>:/videostream -v /sys:/sys -it videostream /bin/bash
+docker run --privileged -v /<videostream_project_dir>:/videostream -v /sys:/sys -it videostream /bin/bash
 ```
 
 ## How to Setup Development Environment
