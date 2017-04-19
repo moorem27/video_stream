@@ -13,6 +13,8 @@ RUN \
    SKIP_WARNING=1 /usr/bin/rpi-update > /dev/null && \
    echo "/opt/vc/lib" > /etc/ld.so.conf.d/00-vmcs.conf && \
    ldconfig && \
+   ln -s /opt/vc/bin/raspivid /usr/bin/raspivid && \
+   ln -s /opt/vc/bin/raspistill /usr/bin/raspistill && \
    cd /tmp && \
    tar xvf zeromq-4.2.2.tar.gz && \
    cd zeromq-4.2.2 && ./configure && make -j4 && make install && \
