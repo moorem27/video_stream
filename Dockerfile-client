@@ -8,6 +8,11 @@ ADD https://raw.githubusercontent.com/zeromq/cppzmq/master/zmq.hpp /usr/include
 ADD https://raw.githubusercontent.com/zeromq/cppzmq/master/zmq_addon.hpp /usr/include
 
 RUN \
+   apt-get update -y -qq && \
+   apt-get install -y -q rpi-update && \
+   SKIP_WARNING=1 /usr/bin/rpi-update > /dev/null && \
+   echo "/opt/vc/lib" > /etc/ld.so.conf.d/00-vmcs.conf && \
+   ldconfig && \
    cd /tmp && \
    tar xvf zeromq-4.2.2.tar.gz && \
    cd zeromq-4.2.2 && ./configure && make -j4 && make install && \

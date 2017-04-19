@@ -27,7 +27,7 @@ docker run -v /<videostream_project_dir>:/videostream -it vs-server /bin/bash
 # build & run client
 # NOTE: this will only build on arm architectures
 docker build -f Dockerfile-client -t vs-client:latest .
-docker run --privileged -v /<videostream_project_dir>:/videostream -it vs-client /bin/bash
+docker run --privileged -v /<videostream_project_dir>:/videostream --device=/dev/vchiq -it vs-client /bin/bash
 ```
 
 ## How to Setup Development Environment
