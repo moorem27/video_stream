@@ -9,7 +9,7 @@
 6. WiringPi
 7. Docker
 8. ffmpeg
-
+  
 ## Set up on Raspberry Pi
 The image below is a useful reference for the pin layout and location of the camera module on the Raspberry Pi.  
 ![](images/rp_pinout.png?raw=true)    
