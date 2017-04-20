@@ -23,3 +23,5 @@
 
 - include: clion.yml
   when: clion.stat.exists == False
+
+- include: wiringpi.yml

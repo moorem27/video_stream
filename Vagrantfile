@@ -13,6 +13,7 @@ Vagrant.configure("2") do |config|
     vb.gui = true
     vb.memory = "2048"
     vb.name = "videostream-dev"
+    vb.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 1000 ]
   end
 
   config.vm.provision "ansible_local" do |ansible|

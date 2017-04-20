@@ -1,0 +1,9 @@
+---
+- name: Clone wiring pi library
+  git:
+    clone: yes
+    dest: /opt/wiringPi
+    repo: "{{ wiringpi_repo }}"
+    update: yes
+  notify:
+    - install wiring pi

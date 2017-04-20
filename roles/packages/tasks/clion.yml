@@ -1,7 +1,7 @@
 ---
 - name: Download CLion
   get_url:
-    url: "https://download.jetbrains.com/cpp/CLion-{{ clion_version }}.tar.gz"
+    url: "{{ clion_url }}"
     dest: /tmp
     mode: 0755
     checksum: "{{ clion_checksum }}"

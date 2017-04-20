@@ -1,4 +1,4 @@
-# video_stream [![Build Status](https://travis-ci.org/moorem27/video_stream.svg?branch=master)](https://travis-ci.org/moorem27/video_stream)
+# video_stream [![Build Status](https://travis-ci.org/moorem27/video_stream.svg?branch=development)](https://travis-ci.org/moorem27/video_stream)
 
 # Development Dependencies
 1. gcc 5.4.0+
@@ -8,7 +8,8 @@
 5. cppzmq
 6. WiringPi
 7. Docker
-
+8. ffmpeg
+  
 ## Set up on Raspberry Pi
 The image below is a useful reference for the pin layout and location of the camera module on the Raspberry Pi.  
 ![](images/rp_pinout.png?raw=true)    
@@ -18,18 +19,15 @@ the sensor, power will be to 5V and ground can be any pin marked as ground (thou
 
 ## How to Run Application
 ```bash
-docker build -t videostream:latest .
+# build & run server
+# NOTE: this will only build on x86/amd architectures
+docker build -f Dockerfile-server -t vs-server:latest .
+docker run -v /<videostream_project_dir>:/videostream -it vs-server /bin/bash
 
-# Ensures that the project and /sys directories are exposed to the Docker container
-#
-# from larsks @ http://stackoverflow.com/questions/30059784/docker-access-to-raspberry-pi-gpio-pins
-# This would expose /sys on the host as /sys inside the container, and you would have access to the
-# /sys/class/gpio hierarchy.
-#
-# If you were using code that access the GPIO pins without using the sysfs interface you would need to
-# expose whatever device node it is using inside the container, possibly with something like the
-# --device argument to docker run.
-docker run -v /<videostream_project_dir>:/videostream -v /sys:/sys -it videostream /bin/bash
+# build & run client
+# NOTE: this will only build on arm architectures
+docker build -f Dockerfile-client -t vs-client:latest .
+docker run --privileged -v /<videostream_project_dir>:/videostream --device=/dev/vchiq -it vs-client /bin/bash
 ```
 
 ## How to Setup Development Environment
