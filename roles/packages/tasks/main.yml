@@ -8,12 +8,12 @@
     state: latest
   with_items: "{{ packages }}"
 
-# FIXME: this is brittle 
+# FIXME: this is brittle
 - name: Check if ZMQ lib exists
   stat: path="/usr/local/lib/libzmq.so"
   register: zmq
 
-# FIXME: this is brittle 
+# FIXME: this is brittle
 - name: Check if CLion exists
   stat: path={{ clion_dir }}
   register: clion
@@ -25,3 +25,4 @@
   when: clion.stat.exists == False
 
 - include: wiringpi.yml
+- include: docker.yml

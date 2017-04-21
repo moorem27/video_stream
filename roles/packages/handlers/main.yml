@@ -3,3 +3,6 @@
   shell: "./build"
   args:
     chdir: /opt/wiringPi
+
+- name: Start Docker
+  service: name=docker state=started

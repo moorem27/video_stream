@@ -10,6 +10,12 @@ clion_url: "https://download.jetbrains.com/cpp/CLion-{{ clion_version }}.tar.gz"
 
 wiringpi_repo: "git://git.drogon.net/wiringPi"
 
+docker_dependencies:
+   - apt-transport-https
+   - ca-certificates
+   - curl
+   - software-properties-common
+
 packages:
   - build-essential # gcc, g++, make
   - cmake
