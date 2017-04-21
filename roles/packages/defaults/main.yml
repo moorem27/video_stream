@@ -20,4 +20,4 @@ packages:
   - automake
   - xorg
   - openbox
-  # - ffmpeg FIXME: ffmpeg is not available on Debian 8 Jessie
+  - ffmpeg
