@@ -14,10 +14,12 @@
 
 - name: Install docker package
   apt: name=docker-engine state=present
-  notify: Start Docker
+
+- name: Start Docker
+  service: name=docker state=started
 
 - name: Add vagrant user to docker group
   user:
-      name: vagrant 
+      name: vagrant
       groups: docker
       append: yes

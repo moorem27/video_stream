@@ -1,0 +1,7 @@
+---
+- name: Check if ZMQ lib exists
+  stat: path="/usr/local/lib/libzmq.so"
+  register: zmq
+
+- include: zmq.yml
+  when: not zmq.stat.exists

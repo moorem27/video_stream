@@ -1,8 +1,0 @@
----
-- name: install wiring pi
-  shell: "./build && ldconfig"
-  args:
-    chdir: /opt/wiringPi
-
-- name: Start Docker
-  service: name=docker state=started

@@ -18,5 +18,3 @@
     src: "{{ clion_dir }}/bin/clion.sh"
     dest: /usr/bin/clion
     state: link
-  
-
