@@ -6,12 +6,18 @@ set( CMAKE_CXX_EXTENSIONS OFF )
 set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules" )
 
 find_package( ZMQ REQUIRED )
-find_package( WiringPi REQUIRED )
 
-add_executable( server server.cc )
-target_link_libraries( server ${ZMQ_LIBRARIES} )
+if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64" )
+   add_executable( server server.cc )
+   target_link_libraries( server ${ZMQ_LIBRARIES} )
+endif()
 
-add_executable( client client.cc )
-target_link_libraries( client
-   ${ZMQ_LIBRARIES}
-   ${WIREPI_LIBRARIES} )
+if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7l" )
+   find_package( WiringPi REQUIRED )
+
+   add_executable( client client.cc )
+   target_link_libraries( client
+      ${ZMQ_LIBRARIES}
+      ${WIREPI_LIBRARIES} )
+endif()
+
