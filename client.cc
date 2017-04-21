@@ -8,8 +8,9 @@
 #include <stdlib.h>
 #include <thread>
 #include <chrono>
+#include <zmq.h>
+#include <zmq_addon.hpp>
 #include <wiringPi.h>
-// bobo comment
 
 namespace {
     // Change your file paths as necessary
@@ -19,41 +20,34 @@ namespace {
     const char* remove_pic = "rm /home/pi/samsung/motion_pic.jpg";
     const std::string video_path = "/home/pi/samsung/video.h264";
     const std::string pic_path = "/home/pi/samsung/motion_pic.jpg";
-    const int send_size = 163840;
+    const int block_size = 4096;
     std::string server_IP{};
     bool streaming = false;
 }
 
-int create_connection() {
-    struct sockaddr_in server_connection{};
-    int file_descriptor = socket( PF_INET, SOCK_STREAM, 0 );
 
-    memset( &server_connection, 0, sizeof( server_connection ) );
-    server_connection.sin_family = AF_INET;
-    server_connection.sin_addr.s_addr = inet_addr( server_IP.c_str() ); // Server address
-    server_connection.sin_port = htons( 8888 );
-
-    int timeout = 0;
-    while( ++timeout < 100 ) {
-        connect( file_descriptor, reinterpret_cast<struct sockaddr*>( &server_connection ), sizeof( server_connection ) );
-    }
-
-    setsockopt( file_descriptor, SOL_SOCKET, SO_SNDBUF, &send_size, sizeof( send_size ) );
-    return file_descriptor;
+zmq::socket_t create_socket( zmq::context_t& context ) {
+    return zmq::socket_t( context, ZMQ_PUSH );    
 }
 
 
-// TODO: Refactor and use file chunking and networking libraries
-void react_to_motion( const int send_fd ) {
-    std::vector<char> buffer( send_size, 0 );
+void react_to_motion( zmq::socket_t& socket ) {
+    // Buffer to hold video file contents
+    std::vector<char> buffer( block_size, 0 );
+
+    // Start recording video
     system( take_video );
     std::cout << "Finished taking video" << std::endl;
+
+    // Open the video file as a binary file
     std::ifstream file( video_path.c_str(), std::ios_base::binary | std::ios::ate );
     file.seekg( 0, std::ios::beg );
 
     while( file.read( buffer.data(), buffer.size() ) ) {
-        if( send( send_fd, static_cast<void *>( buffer.data() ), buffer.size(), 0 ) < 0 )
-            std::cout << "Send failed" << std::endl;
+	buffer.shrink_to_fit();
+	zmq::message_t encoded_message( buffer.size() );
+	memcpy( encoded_message.data(), buffer.data(), buffer.size() );
+	socket.send( encoded_message );
     }
     std::cout << "Finished sending video" << std::endl;
     file.close();
@@ -61,26 +55,23 @@ void react_to_motion( const int send_fd ) {
     streaming = false;
 }
 
-
 // TODO: Make this event based instead of polling
 int main( int argc, char* argv[] ) {
     server_IP = argv[ 1 ];
     std::cout << wiringPiSetupGpio() << std::endl;
-    const int send_fd = create_connection();
-//    std::cout << "send_fd " << send_fd << std::endl;
-//    std::this_thread::sleep_for( std::chrono::seconds( 15 ) );
-//
-//
-//    while( true ) {
-//        if( !streaming ) {
-//            if ( digitalRead( 7 ) ) {
-//                streaming = true;
-//                std::cout << "Motion detected!" << std::endl;
-//                react_to_motion( send_fd );
-//                break;
-//            }
-//            std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
-//        }
-//    }
+    zmq::context_t context{ 1 };
+    zmq::socket_t socket{ context, ZMQ_PUSH };
+
+    std::this_thread::sleep_for( std::chrono::seconds( 2 ) );
+    while( true ) {
+        if( !streaming ) {
+            if ( digitalRead( 7 ) ) {
+                streaming = true;
+                std::cout << "Motion detected!" << std::endl;
+                react_to_motion( socket );
+            }
+            std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
+        }
+    }
     return 0;
 }
