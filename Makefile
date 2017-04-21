@@ -1,13 +1,7 @@
-j.PHONY : all build run clean
+j.PHONY : client server stop-server stop-client clean-server clean-client
 all: build
 
-# set build context
-context:
-	docker run --rm --privileged multiarch/qemu-user-static:register --reset
-
-build: clean client server
-
-client: context
+client:
 	docker build -t vs-client -f Dockerfile-client .
 
 server:
