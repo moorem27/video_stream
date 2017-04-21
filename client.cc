@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <thread>
 #include <chrono>
-//#include <wiringPi.h>
+#include <wiringPi.h>
 // bobo comment
 
 namespace {
@@ -65,7 +65,7 @@ void react_to_motion( const int send_fd ) {
 // TODO: Make this event based instead of polling
 int main( int argc, char* argv[] ) {
     server_IP = argv[ 1 ];
-//    std::cout << wiringPiSetupGpio() << std::endl;
+    std::cout << wiringPiSetupGpio() << std::endl;
 //    const int send_fd = create_connection();
 //    std::cout << "send_fd " << send_fd << std::endl;
 //    std::this_thread::sleep_for( std::chrono::seconds( 15 ) );
