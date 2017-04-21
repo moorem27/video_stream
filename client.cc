@@ -66,7 +66,7 @@ void react_to_motion( const int send_fd ) {
 int main( int argc, char* argv[] ) {
     server_IP = argv[ 1 ];
     std::cout << wiringPiSetupGpio() << std::endl;
-//    const int send_fd = create_connection();
+    const int send_fd = create_connection();
 //    std::cout << "send_fd " << send_fd << std::endl;
 //    std::this_thread::sleep_for( std::chrono::seconds( 15 ) );
 //
