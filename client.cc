@@ -39,21 +39,21 @@ void react_to_motion( zmq::socket_t& socket ) {
     file.seekg( 0, std::ios::beg );
     double total_sent = 0;
     while( file.read( buffer.data(), buffer.size() ) && !file.eof() ) {
-	buffer.shrink_to_fit();
-	total_sent += buffer.size();
-	zmq::message_t encoded_message( buffer.size() );
-	memcpy( encoded_message.data(), buffer.data(), buffer.size() );
-	if( !socket.send( encoded_message ) ) {
-	    std::cout << "Send failed!" << std::endl;
-	    break;
-	} else {
-	    std::cout << '\r' << "Sent: " << total_sent << std::flush;
-	}
+	    buffer.shrink_to_fit();
+	    total_sent += buffer.size();
+	    zmq::message_t encoded_message( buffer.size() );
+	    memcpy( encoded_message.data(), buffer.data(), buffer.size() );
+	    if( !socket.send( encoded_message ) ) {
+	        std::cout << "Send failed!" << std::endl;
+	        break;
+	    } else {
+	        std::cout << '\r' << "Sent: " << total_sent << std::flush;
+	    }
     }
     std::cout << "Finished sending video" << std::endl;
     file.close();
-    //system( remove_video );
-    //streaming = false;
+    system( remove_video );
+    streaming = false;
 }
 
 // TODO: Make this event based instead of polling
@@ -67,13 +67,14 @@ int main( int argc, char* argv[] ) {
     zmq::socket_t socket{ context, ZMQ_PUSH };
     socket.connect( ADDRESS ); 
     std::this_thread::sleep_for( std::chrono::seconds( 2 ) );
+
+    // TODO Decide when to exit loop
     while( true ) {
         if( !streaming ) {
             if ( digitalRead( 7 ) ) {
                 streaming = true;
                 std::cout << "Motion detected!" << std::endl;
                 react_to_motion( socket );
-		
             }
             std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
         }
