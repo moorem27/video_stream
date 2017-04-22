@@ -7,15 +7,15 @@
 #include "zmq_addon.hpp"
 
 // TODO Replace local file paths with vagrant/docker path
-// TODO Figure out when message receive blocks when client connection is severed
+// TODO Figure out why message receive blocks when client connection is severed
 int main( void ) {
 	zmq::context_t context{ 1 };
 	zmq::socket_t socket{ context, ZMQ_PULL };
 
-        // System command to convert file format	
+	// System command to convert file format
 	const char* convert =  "ffmpeg -i /Users/matthewmoore/Desktop/first_vid.h264 -c copy /Users/matthewmoore/Desktop/first_vid.mp4";
 
-        // Buffer size	
+	// Buffer size
 	size_t buffer_size = 8192;
 
 	// Receive buffer
