@@ -8,4 +8,4 @@ BASEDIR=`dirname $BASEDIR`
 echo "$BASEDIR"
 
 docker build -f Dockerfile-server -t vs-server:latest .
-docker run -v "$BASEDIR":/videostream -it vs-server
+docker run -p 5555:5555 -v "$BASEDIR":/videostream -it vs-server
