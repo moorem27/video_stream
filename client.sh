@@ -6,5 +6,5 @@ BASEDIR=`realpath $0`
 BASEDIR=`dirname $BASEDIR`
 
 docker build -f Dockerfile-client -t vs-client:latest .
-docker run --privileged -v "$BASEDIR":/videostream \
+docker run --privileged -p 5555:5555 -v "$BASEDIR":/videostream \
 --device=/dev/vchiq --device=/dev/gpiomem -it vs-client /bin/bash
