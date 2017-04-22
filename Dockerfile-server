@@ -8,4 +8,4 @@ RUN \
    apt-get -y install ffmpeg && \
    rm -rvf /var/lib/apt/lists/*
 
-EXPOSE 4244
+EXPOSE 5555

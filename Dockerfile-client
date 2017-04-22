@@ -19,4 +19,4 @@ RUN \
    rm -rvf /var/lib/apt/lists/* && \
    rm -rvf /tmp/*
 
-EXPOSE 4242
+EXPOSE 5555
