@@ -6,51 +6,46 @@
 #include <fstream>
 #include <iostream>
 #include <stdlib.h>
+#include <zmq.h>
+#include <zmq.hpp>
+#include "zmq_addon.hpp"
 
-int create_server() {
-	int val = 1;
-	int backlog = 5;
-	struct sockaddr_in server_address{};
-	int listenfd = socket( PF_INET, SOCK_STREAM, 0 );
-	setsockopt( listenfd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof( val ) );
-	memset( &server_address, 0, sizeof( server_address ) );
-
-	server_address.sin_family = AF_INET;
-	server_address.sin_addr.s_addr = htonl( INADDR_ANY );
-	server_address.sin_port = htons( 8888 );
-
-	bind( listenfd, reinterpret_cast<sockaddr*>( &server_address ), sizeof( server_address ) );
-
-	listen( listenfd, backlog );
-	return listenfd;
-}
-
+// TODO Replace local file paths with vagrant/docker path
 int main( void ) {
-        	
-	const char* convert =  "ffmpeg -i /home/matt/Desktop/first_vid.h264 -c copy /home/matt/Desktop/first_vid.mp4";
-	int listen_fd = create_server();
-	int buffer_size = 212992;
-	char byte[ buffer_size ];
-	memset( &byte, 0, sizeof( byte ) );
-	std::cout << "Waiting for connection..." << std::endl;	
-	int ack_fd = accept( listen_fd, 0, 0 );
-	std::cout << "Connected!" << std::endl;
-	setsockopt( ack_fd, SOL_SOCKET, SO_RCVBUF, &buffer_size, sizeof( buffer_size ) );
-	std::ofstream output_file{};
-	output_file.open( "/home/matt/Desktop/first_vid.h264", std::ios_base::binary | std::ios::out );
+	zmq::context_t context{ 1 };
+	zmq::socket_t socket{ context, ZMQ_PULL };
 
-	int bytes = buffer_size;
+        // System command to convert file format	
+	const char* convert =  "ffmpeg -i /Users/matthewmoore/Desktop/first_vid.h264 -c copy /Users/matthewmoore/Desktop/first_vid.mp4";
+
+        // Buffer size	
+	size_t buffer_size = 8192;
+
+	// Receive buffer
+	char byte[ buffer_size ];
+	
+	// Clear
+	memset( &byte, 0, sizeof( byte ) );
+
+	std::cout << "Waiting for connection..." << std::endl;
+        
+	// Bind server
+	socket.bind( "tcp://*:5555" );	
+	std::cout << "Connected!" << std::endl;
+	std::ofstream output_file{};
+	output_file.open( "/Users/matthewmoore/Desktop/first_vid.h264", std::ios_base::binary | std::ios::out );
+
 	double total_bytes = 0;
 	double received_bytes = 0;
+	zmq::message_t received{ buffer_size };
 	auto begin = std::chrono::high_resolution_clock::now();
 	do {
-
-		received_bytes = recv( ack_fd, byte, buffer_size, MSG_WAITALL );
-		if( received_bytes > 0 ) {
-			output_file.write( byte, buffer_size );
-			std::cout << '\r'<< "Received: " << total_bytes/1000000000 << std::flush;
-			total_bytes = total_bytes + received_bytes;
-			memset( &byte, 0, sizeof( byte ) );
+		if( socket.recv( &received ) ) {
+		    memcpy( byte, static_cast<char*>( received.data() ), sizeof( received ) );
+		    received_bytes = received.size();
+		    total_bytes = total_bytes + received_bytes;
+		    std::cout << '\r'<< "Received: " << total_bytes/1000000000 << std::flush;
+		    output_file.write( byte, received.size() );
 		} else {
 			std::cout << "Closing file!" << std::endl;
 			output_file.close();
@@ -60,7 +55,7 @@ int main( void ) {
 	auto end = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::seconds>( end - begin ).count();
 	system( convert );
-	system( "rm /home/matt/Desktop/first_vid.h264" );
+	system( "rm /Users/matthewmoore/Desktop/first_vid.h264" );
 	std::cout << "\nReceived file in " << duration << " s" << std::endl;
 	return 0;
 }
