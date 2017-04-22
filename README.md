@@ -32,7 +32,7 @@ docker run --privileged -v /<videostream_project_dir>:/videostream --device=/dev
 
 ## How to Setup Development Environment
 ```bash
-vagrant up
+vagrant up # sit back and relax because this will take a while
 ```
 ## How to Run Application in Development Environment
 ```bash

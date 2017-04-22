@@ -5,23 +5,5 @@
 - name: Install development packages
   apt:
     name: "{{ item }}"
-    state: latest
+    state: present
   with_items: "{{ packages }}"
-
-# FIXME: this is brittle 
-- name: Check if ZMQ lib exists
-  stat: path="/usr/local/lib/libzmq.so"
-  register: zmq
-
-# FIXME: this is brittle 
-- name: Check if CLion exists
-  stat: path={{ clion_dir }}
-  register: clion
-
-- include: zmq.yml
-  when: zmq.stat.exists == False
-
-- include: clion.yml
-  when: clion.stat.exists == False
-
-- include: wiringpi.yml

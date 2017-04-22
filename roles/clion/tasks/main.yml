@@ -1,0 +1,7 @@
+---
+- name: Check if CLion exists
+  stat: path={{ clion_dir }}
+  register: clion
+
+- include: clion.yml
+  when: not clion.stat.exists
