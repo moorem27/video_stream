@@ -1,16 +1,13 @@
 #include <chrono>
 #include <string.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <arpa/inet.h>
 #include <fstream>
 #include <iostream>
-#include <stdlib.h>
 #include <zmq.h>
 #include <zmq.hpp>
 #include "zmq_addon.hpp"
 
 // TODO Replace local file paths with vagrant/docker path
+// TODO Figure out when message receive blocks when client connection is severed
 int main( void ) {
 	zmq::context_t context{ 1 };
 	zmq::socket_t socket{ context, ZMQ_PULL };
