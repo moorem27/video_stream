@@ -57,15 +57,14 @@ void react_to_motion( zmq::socket_t& socket ) {
 }
 
 // TODO: Make this event based instead of polling
-// USAGE: ./executable IP_ADDRESS
-//        ./client 127.0.0.1
 int main( int argc, char* argv[] ) {
     // Create address
-    ADDRESS = "tcp://" + std::string{ argv[ 1 ] } + ":5555";
-    std::cout << wiringPiSetupGpio() << std::endl;
+    ADDRESS = "tcp://*:5555";
+    std::string setup = wiringPiSetupGpio() == 0 ? "Good to go" : "Set up failed";
+    std::cout << setup << std::endl;
     zmq::context_t context{ 1 };
     zmq::socket_t socket{ context, ZMQ_PUSH };
-    socket.connect( ADDRESS ); 
+    socket.bind( ADDRESS ); 
     std::this_thread::sleep_for( std::chrono::seconds( 2 ) );
 
     // TODO Decide when to exit loop
