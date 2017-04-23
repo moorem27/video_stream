@@ -2,9 +2,9 @@ syntax = "proto3";
 package gpb;
 
 message Request {
-    int32 bytes = 1;
+    int64 bytes = 1;
 }
 
 message Reply {
-    int32 bytes = 1;
+    int64 bytes = 1;
 }
