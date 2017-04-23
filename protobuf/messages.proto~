@@ -1,0 +1,10 @@
+syntax = "proto3";
+package gpb;
+
+message Request {
+    optional int32 bytes = 1;
+}
+
+message Reply {
+    optional int32 bytes = 1;
+}

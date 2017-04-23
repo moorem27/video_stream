@@ -1,6 +1,7 @@
 cmake_minimum_required( VERSION 3.1.0 FATAL_ERROR )
 project( server_client CXX )
 
+add_subdirectory( protobuf/ )
 set( CMAKE_CXX_STANDARD 11 )
 set( CMAKE_CXX_EXTENSIONS OFF )
 set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules" )
@@ -17,7 +18,9 @@ if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7l" )
 
    add_executable( client client.cc )
    target_link_libraries( client
+      gpb_lib
       ${ZMQ_LIBRARIES}
       ${WIREPI_LIBRARIES} )
 endif()
 
+include_directories(${CMAKE_BINARY_DIR}/protobuf)
