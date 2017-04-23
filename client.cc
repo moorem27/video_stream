@@ -50,6 +50,13 @@ zmq::message_t create_container( long long int file_size ) {
     return container;
 }
 
+gpb::Reply unwrap_container( zmq::message_t& message ) {
+    gpb::Reply server_reply{};
+    server_reply.ParseFromArray( message.data(), sizeof( message ) );
+    
+    return server_reply; 
+}
+
 
 void react_to_motion( zmq::socket_t& socket ) {
     // Buffer to hold video file contents
@@ -79,16 +86,23 @@ void react_to_motion( zmq::socket_t& socket ) {
 	    }
     }
 
-    
-    // TODO    
-    // Finished sending data, so send total file size to server and wait for receipt 
-    // confirmation ( REQ - REP ) ( Add timeout and handle errors appropriately )
-    
+
+    // Look into ways to buffer the videos and handle this in separate thread
+    // TODO: Separate function /////////////////////////////////////////////
     request_socket.send( create_container( file_size ) );
 
-    //     if( received_bytes == file_size )
-    //         streaming = false;
-    
+    zmq::message_t receive_buffer{};
+
+    request_socket.recv( &receive_buffer );
+
+    gpb::Reply reply = unwrap_container( receive_buffer );
+
+    if( reply.bytes() == file_size )
+        streaming = false;
+    else
+        // TODO Handle error 
+    /////////////////////////////////////////////////////////////////////////
+
 
     std::cout << "Finished sending video" << std::endl;
     file.close();
