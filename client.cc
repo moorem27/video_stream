@@ -22,7 +22,7 @@ namespace {
     const int block_size = 4096;
     bool streaming = false;
     zmq::context_t context{ 1 };
-    zmq::socket_t request{ context, ZMQ_REQ };
+    zmq::socket_t request_socket{ context, ZMQ_REQ };
 }
 
 long long int get_file_size( std::ifstream& file ) {
@@ -31,6 +31,23 @@ long long int get_file_size( std::ifstream& file ) {
     file.seekg( 0, std::ios::beg );
 
     return file_size;
+}
+
+
+zmq::message_t create_container( long long int file_size ) {
+    gpb::Request file_receipt{};
+    file_receipt.set_bytes( file_size );
+
+    int size = file_receipt.ByteSize();
+    void* buffer = malloc( size );
+
+    file_receipt.SerializeToArray( buffer, size );
+
+    zmq::message_t container( size );
+    memcpy( container.data(), buffer, size );
+    free( buffer );
+
+    return container;
 }
 
 
@@ -62,9 +79,13 @@ void react_to_motion( zmq::socket_t& socket ) {
 	    }
     }
 
+    
     // TODO    
     // Finished sending data, so send total file size to server and wait for receipt 
     // confirmation ( REQ - REP ) ( Add timeout and handle errors appropriately )
+    
+    request_socket.send( create_container( file_size ) );
+
     //     if( received_bytes == file_size )
     //         streaming = false;
     
@@ -82,7 +103,7 @@ int main( int argc, char* argv[] ) {
     zmq::context_t context{ 1 };
     zmq::socket_t socket{ context, ZMQ_PUSH };
     socket.bind( "tcp://*:5555" ); 
-    request.connect( "tcp://192.168.1.3:5556" );
+    request_socket.connect( "tcp://192.168.1.3:5556" );
     std::this_thread::sleep_for( std::chrono::seconds( 2 ) );
 
     // TODO Decide when to exit loop
