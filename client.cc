@@ -1,16 +1,15 @@
 #include <string.h>
-#include <netdb.h>
-#include <arpa/inet.h>
 #include <vector>
 #include <fstream>
 #include <sys/socket.h>
 #include <iostream>
-#include <stdlib.h>
 #include <thread>
 #include <chrono>
 #include <zmq.h>
 #include <zmq_addon.hpp>
 #include <wiringPi.h>
+
+#include "messages.pb.h"
 
 namespace {
     // Change your file paths as necessary
@@ -21,8 +20,17 @@ namespace {
     const std::string video_path = "/home/pi/video_stream/video.h264";
     const std::string pic_path = "/home/pi/video_stream/motion_pic.jpg";
     const int block_size = 4096;
-    std::string ADDRESS{};
     bool streaming = false;
+    zmq::context_t context{ 1 };
+    zmq::socket_t request{ context, ZMQ_REQ };
+}
+
+long long int get_file_size( std::ifstream& file ) {
+    file.seekg( 0, std::ios::end );
+    long long int file_size = file.tellg();
+    file.seekg( 0, std::ios::beg );
+
+    return file_size;
 }
 
 
@@ -36,8 +44,11 @@ void react_to_motion( zmq::socket_t& socket ) {
 
     // Open the video file as a binary file
     std::ifstream file( video_path.c_str(), std::ios_base::binary | std::ios::ate );
-    file.seekg( 0, std::ios::beg );
+
+    long long int file_size = get_file_size( file );
     double total_sent = 0;
+
+    // Read data from file 4096 bytes at a time and send to server
     while( file.read( buffer.data(), buffer.size() ) && !file.eof() ) {
 	    buffer.shrink_to_fit();
 	    total_sent += buffer.size();
@@ -50,21 +61,28 @@ void react_to_motion( zmq::socket_t& socket ) {
 	        std::cout << '\r' << "Sent: " << total_sent << std::flush;
 	    }
     }
+
+    // TODO    
+    // Finished sending data, so send total file size to server and wait for receipt 
+    // confirmation ( REQ - REP ) ( Add timeout and handle errors appropriately )
+    //     if( received_bytes == file_size )
+    //         streaming = false;
+    
+
     std::cout << "Finished sending video" << std::endl;
     file.close();
     system( remove_video );
-    streaming = false;
 }
 
 // TODO: Make this event based instead of polling
 int main( int argc, char* argv[] ) {
     // Create address
-    ADDRESS = "tcp://*:5555";
     std::string setup = wiringPiSetupGpio() == 0 ? "Good to go" : "Set up failed";
     std::cout << setup << std::endl;
     zmq::context_t context{ 1 };
     zmq::socket_t socket{ context, ZMQ_PUSH };
-    socket.bind( ADDRESS ); 
+    socket.bind( "tcp://*:5555" ); 
+    request.connect( "tcp://192.168.1.3:5556" );
     std::this_thread::sleep_for( std::chrono::seconds( 2 ) );
 
     // TODO Decide when to exit loop
