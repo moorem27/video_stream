@@ -28,7 +28,7 @@ before_script:
   - sudo ./configure
   - sudo make -j8
   - sudo make install
-  - cd /tmp/protobuf-3.2-2
+  - cd /tmp/protobuf-3.2.0
   - sudo ./configure
   - sudo make -j8
   # - sudo make -j8 check
