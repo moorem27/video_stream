@@ -1,6 +1,3 @@
-cmake_minimum_required( VERSION 3.5 )
-project( video_stream )
-
 find_package( Protobuf REQUIRED )
 
 set( SOURCES messages.proto )
