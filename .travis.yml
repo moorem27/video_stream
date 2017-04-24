@@ -21,11 +21,19 @@ before_script:
   - export CXX="g++-5"
   - cd /tmp
   - wget https://github.com/zeromq/libzmq/releases/download/v4.2.2/zeromq-4.2.2.tar.gz
+  - wget https://github.com/google/protobuf/releases/download/v3.2.0/protobuf-cpp-3.2.0.tar.gz
   - tar xvf zeromq-4.2.2.tar.gz
+  - tar xvf protobuf-cpp-3.2.0.tar.gz
   - cd zeromq-4.2.2
   - sudo ./configure
-  - sudo make -j7
+  - sudo make -j8
   - sudo make install
+  - cd /tmp/protobuf-3.2-2
+  - sudo ./configure
+  - sudo make -j8
+  # - sudo make -j8 check
+  - sudo make install
+  - sudo ldconfig
   - cd /usr/local/include
   - sudo wget https://raw.githubusercontent.com/zeromq/cppzmq/master/zmq.hpp
   - sudo wget https://raw.githubusercontent.com/zeromq/cppzmq/master/zmq_addon.hpp
@@ -36,4 +44,4 @@ script:
   - mkdir build
   - cd build;
   - cmake ..
-  - make -j7
+  - make -j8
