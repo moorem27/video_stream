@@ -13,7 +13,7 @@ include_directories( ${CMAKE_BINARY_DIR}/protobuf )
 
 if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64" )
    add_executable( server server.cc )
-   target_link_libraries( server ${ZMQ_LIBRARIES} )
+   target_link_libraries( server gpb_lib ${ZMQ_LIBRARIES} )
 endif()
 
 if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7l" )
