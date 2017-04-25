@@ -60,6 +60,7 @@ void react_to_motion( zmq::socket_t& socket ) {
             }
     }
     if( total_sent == file_size )
+        // TODO: If the entire file was sent, we should see this print......but we don't......Why??
         std::cout << "Total sent: " << total_sent << std::endl;
     streaming = false;
 
