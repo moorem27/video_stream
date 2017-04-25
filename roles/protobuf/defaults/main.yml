@@ -1,3 +1,0 @@
----
-protobuf_version: "3.2.0"
-protobuf_url: "https://github.com/google/protobuf/releases/download/v{{ protobuf_version }}/protobuf-cpp-{{ protobuf_version }}.tar.gz"

@@ -7,4 +7,3 @@
     - docker
     - wiringPi
     - zmq
-    - protobuf
