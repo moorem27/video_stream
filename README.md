@@ -1,14 +1,16 @@
 # video_stream [![Build Status](https://travis-ci.org/moorem27/video_stream.svg?branch=development)](https://travis-ci.org/moorem27/video_stream)
 
 # Development Dependencies
-1. gcc 5.4.0+
-2. make 4.1+
-3. cmake 3.1.0+
-4. zeromq-4.2.2+
-5. cppzmq
-6. WiringPi
-7. Docker
-8. ffmpeg
+| server       | client          | 
+| ------------- |:-------------:| 
+| gcc 5.4.0+      | gcc 5.4.0+ |
+| gcc-c++ 5.4.0+      | gcc-c++ 5.4.0+ |
+| make 4.1+ | make 4.1+ |
+| cmake 3.1.0+ | cmake 3.1.0+ |
+| zeromq 4.2.2+ | zeromq 4.2.2+ |
+| cppzmq | cppzmq |
+| protobuf-cpp 3.2.0 | protobuf-cpp 3.2.0 |
+| ffmpeg | wiringPi |
   
 ## Set up on Raspberry Pi
 The image below is a useful reference for the pin layout and location of the camera module on the Raspberry Pi.  
