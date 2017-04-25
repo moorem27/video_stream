@@ -5,15 +5,12 @@ set( CMAKE_CXX_STANDARD 11 )
 set( CMAKE_CXX_EXTENSIONS OFF )
 set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules" )
 
-add_subdirectory( protobuf/ )
 
 find_package( ZMQ REQUIRED )
 
-include_directories( ${CMAKE_BINARY_DIR}/protobuf )
-
 if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64" )
    add_executable( server server.cc )
-   target_link_libraries( server gpb_lib ${ZMQ_LIBRARIES} )
+   target_link_libraries( server ${ZMQ_LIBRARIES} )
 endif()
 
 if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7l" )
@@ -21,7 +18,6 @@ if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7l" )
 
    add_executable( client client.cc )
    target_link_libraries( client
-      gpb_lib
       ${ZMQ_LIBRARIES}
       ${WIREPI_LIBRARIES} )
 endif()
