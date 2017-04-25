@@ -7,8 +7,6 @@ set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules" )
 
 find_package( ZMQ REQUIRED )
 
-include_directories( ${CMAKE_BINARY_DIR}/protobuf )
-
 if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64" )
    add_executable( server server.cc )
    target_link_libraries( server ${ZMQ_LIBRARIES} )

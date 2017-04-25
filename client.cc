@@ -9,52 +9,25 @@
 #include <zmq_addon.hpp>
 #include <wiringPi.h>
 
-#include "messages.pb.h"
 
 namespace {
     // Change your file paths as necessary
     const char* take_picture = "raspistill -o /home/pi/video_stream/motion_pic.jpg";
-    const char* take_video = "raspivid -o /home/pi/video_stream/video.h264 -t 30000 -d";
+    const char* take_video = "raspivid -o /home/pi/video_stream/video.h264 -t 5000 -d";
     const char* remove_video = "rm /home/pi/video_stream/video.h264";
     const char* remove_pic = "rm /home/pi/video_stream/motion_pic.jpg";
     const std::string video_path = "/home/pi/video_stream/video.h264";
     const std::string pic_path = "/home/pi/video_stream/motion_pic.jpg";
-    const int block_size = 4096;
+    const int block_size = 8192;
     bool streaming = false;
-    zmq::context_t context{ 1 };
-    zmq::socket_t request_socket{ context, ZMQ_REQ };
 }
 
-long long int get_file_size( std::ifstream& file ) {
+int get_file_size( std::ifstream& file ) {
     file.seekg( 0, std::ios::end );
-    long long int file_size = file.tellg();
+    int file_size = file.tellg();
     file.seekg( 0, std::ios::beg );
 
     return file_size;
-}
-
-
-zmq::message_t create_container( long long int file_size ) {
-    gpb::Request file_receipt{};
-    file_receipt.set_bytes( file_size );
-
-    int size = file_receipt.ByteSize();
-    void* buffer = malloc( size );
-
-    file_receipt.SerializeToArray( buffer, size );
-
-    zmq::message_t container( size );
-    memcpy( container.data(), buffer, size );
-    free( buffer );
-
-    return container;
-}
-
-gpb::Reply unwrap_container( zmq::message_t& message ) {
-    gpb::Reply server_reply{};
-    server_reply.ParseFromArray( message.data(), sizeof( message ) );
-    
-    return server_reply; 
 }
 
 
@@ -69,42 +42,30 @@ void react_to_motion( zmq::socket_t& socket ) {
     // Open the video file as a binary file
     std::ifstream file( video_path.c_str(), std::ios_base::binary | std::ios::ate );
 
-    long long int file_size = get_file_size( file );
+    int file_size = get_file_size( file );
+    std::cout << "File size: " << file_size << std::endl;
     double total_sent = 0;
+    int bytes_to_read = 0;
+    // Read data from file chunks at a time and send to server
+    while( file.read( buffer.data(), block_size ) ) {
+            buffer.shrink_to_fit();
+            total_sent += buffer.size();
 
-    // Read data from file 4096 bytes at a time and send to server
-    while( file.read( buffer.data(), buffer.size() ) && !file.eof() ) {
-	    buffer.shrink_to_fit();
-	    total_sent += buffer.size();
-	    zmq::message_t encoded_message( buffer.size() );
-	    memcpy( encoded_message.data(), buffer.data(), buffer.size() );
-	    if( !socket.send( encoded_message ) ) {
-	        std::cout << "Send failed!" << std::endl;
-	        break;
-	    } else {
-	        std::cout << '\r' << "Sent: " << total_sent << std::flush;
-	    }
+            zmq::multipart_t multipart{};
+            multipart.addtyp( file_size );
+            multipart.addmem( buffer.data(), buffer.size() );
+            if ( !multipart.send( socket ) ) {
+                std::cout << "Send failed!" << std::endl;
+                break;
+            }
     }
+    if( total_sent == file_size )
+        // TODO: If the entire file was sent, we should see this print......but we don't......Why??
+        std::cout << "Total sent: " << total_sent << std::endl;
+    streaming = false;
 
 
-    // Look into ways to buffer the videos and handle this in separate thread
-    // TODO: Separate function /////////////////////////////////////////////
-    request_socket.send( create_container( file_size ) );
-
-    zmq::message_t receive_buffer{};
-
-    request_socket.recv( &receive_buffer );
-
-    gpb::Reply reply = unwrap_container( receive_buffer );
-
-    if( reply.bytes() == file_size )
-        streaming = false;
-    else
-        // TODO Handle error 
-    /////////////////////////////////////////////////////////////////////////
-
-
-    std::cout << "Finished sending video" << std::endl;
+    std::cout << "Finished sending video " << total_sent << std::endl;
     file.close();
     system( remove_video );
 }
@@ -117,7 +78,6 @@ int main( int argc, char* argv[] ) {
     zmq::context_t context{ 1 };
     zmq::socket_t socket{ context, ZMQ_PUSH };
     socket.bind( "tcp://*:5555" ); 
-    request_socket.connect( "tcp://192.168.1.3:5556" );
     std::this_thread::sleep_for( std::chrono::seconds( 2 ) );
 
     // TODO Decide when to exit loop
