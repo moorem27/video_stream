@@ -7,8 +7,8 @@
 #include <zmq_addon.hpp>
 
 // TODO Replace local file paths with vagrant/docker path
-// TODO Figure out why message receive blocks when client connection is severed
 // TODO Break apart this hideous main function
+
 int main( void ) {
 	zmq::context_t context{ 1 };
 	zmq::socket_t socket{ context, ZMQ_PULL };
