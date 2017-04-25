@@ -45,27 +45,26 @@ void react_to_motion( zmq::socket_t& socket ) {
     int file_size = get_file_size( file );
     std::cout << "File size: " << file_size << std::endl;
     double total_sent = 0;
-
-    // Read data from file 4096 bytes at a time and send to server
+    int bytes_to_read = 0;
+    // Read data from file chunks at a time and send to server
     while( file.read( buffer.data(), block_size ) ) {
-	    buffer.shrink_to_fit();
-	    total_sent += buffer.size();
+            buffer.shrink_to_fit();
+            total_sent += buffer.size();
 
-    	zmq::multipart_t multipart{};
-        multipart.addtyp( file_size );
-        multipart.addmem( buffer.data(), buffer.size() );
-	    if( !multipart.send( socket ) ) {
-	        std::cout << "Send failed!" << std::endl;
-	        break;
-	    } else {
-	        std::cout << '\r' << "Sent: " << total_sent << std::flush;
-	    }
+            zmq::multipart_t multipart{};
+            multipart.addtyp( file_size );
+            multipart.addmem( buffer.data(), buffer.size() );
+            if ( !multipart.send( socket ) ) {
+                std::cout << "Send failed!" << std::endl;
+                break;
+            }
     }
-
+    if( total_sent == file_size )
+        std::cout << "Total sent: " << total_sent << std::endl;
     streaming = false;
 
 
-    std::cout << "Finished sending video" << std::endl;
+    std::cout << "Finished sending video " << total_sent << std::endl;
     file.close();
     system( remove_video );
 }
