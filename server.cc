@@ -37,11 +37,17 @@ int main( void ) {
 	long file_size = 0;
 	size_t received_bytes = 0;
 	zmq::multipart_t received {};
+	bool got_size = false;
 	auto begin = std::chrono::high_resolution_clock::now();
 	do {
 		if( received.recv( socket ) ) {
 			try {
 				file_size = received.poptyp<int>();
+				if( !got_size ) {
+					std::cout << "file_size = " << file_size << std::endl;
+					got_size = true;
+				}
+
 			} catch( std::runtime_error& e ) {
 				std::cout << e.what() << std::endl;
 			}
@@ -52,7 +58,8 @@ int main( void ) {
 		    received_bytes = encoded_message.size();
 		    total_bytes += received_bytes;
 		    output_file.write( byte, received_bytes );
-		    std::cout << '\r' << total_bytes << std::flush;
+			std::cout << '\r' << total_bytes << std::flush;
+
 			if( total_bytes == file_size ) {
 				std::cout << "total_bytes == file_size" << std::endl;
 				system( convert );
