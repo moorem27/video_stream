@@ -49,11 +49,11 @@ void react_to_motion( zmq::socket_t& socket ) {
     // Read data from file chunks at a time and send to server
     while( file.read( buffer.data(), block_size ) ) {
             buffer.shrink_to_fit();
-            total_sent += buffer.size();
+            total_sent += sizeof( buffer.data() );
 
             zmq::multipart_t multipart{};
             multipart.addtyp( file_size );
-            multipart.addmem( buffer.data(), buffer.size() );
+            multipart.addmem( buffer.data(), sizeof( buffer.data() ) );
             if ( !multipart.send( socket ) ) {
                 std::cout << "Send failed!" << std::endl;
                 break;
