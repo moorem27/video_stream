@@ -1,23 +1,11 @@
 ---
-zmq_version: 4.2.2
-zmq_full_name: "zeromq-{{ zmq_version}}"
-zmq_url: "https://github.com/zeromq/libzmq/releases/download/v{{ zmq_version }}/{{ zmq_full_name }}.tar.gz"
-
-clion_version: "2017.1.1"
-clion_dir: "/opt/clion-{{ clion_version }}"
-clion_checksum: "sha256:9abd6bd38801ae6cf29db2cd133c700e8da11841093de872312fe33ed51309ae"
-clion_url: "https://download.jetbrains.com/cpp/CLion-{{ clion_version }}.tar.gz"
-
-wiringpi_repo: "git://git.drogon.net/wiringPi"
-
 packages:
   - build-essential # gcc, g++, make
   - cmake
   - gdb
-  - cgdb
   - git
   - autoconf
   - automake
   - xorg
   - openbox
-  # - ffmpeg FIXME: ffmpeg is not available on Debian 8 Jessie
+  - ffmpeg

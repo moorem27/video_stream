@@ -1,0 +1,4 @@
+---
+zmq_version: 4.2.2
+zmq_full_name: "zeromq-{{ zmq_version}}"
+zmq_url: "https://github.com/zeromq/libzmq/releases/download/v{{ zmq_version }}/{{ zmq_full_name }}.tar.gz"

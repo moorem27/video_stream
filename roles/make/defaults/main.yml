@@ -1,3 +1,0 @@
----
-vagrant_dir: /vagrant
-build_dir: "{{ vagrant_dir }}/build"
