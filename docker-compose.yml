@@ -1,8 +1,15 @@
-version: '2'
+version: "2"
 
 services:
+  server:
+    build: server/
+    ports:
+      - "5555:5555"
+    volumes:
+      - .:/videostream-share
+
   client:
-    build: .
+    build: client/
     ports:
       - "5555:5555"
     devices:
