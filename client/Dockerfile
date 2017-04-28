@@ -4,7 +4,7 @@ FROM brandonsoto/cppzmq:rpi
 MAINTAINER Brandon Soto (brandon.soto09@gmail.com)
 
 RUN \
-   apt-get update -y -qq && \
+   apt-get update -y -q && \
    apt-get install -y -q vim rpi-update && \
    SKIP_WARNING=1 /usr/bin/rpi-update > /dev/null && \
    echo "/opt/vc/lib" > /etc/ld.so.conf.d/00-vmcs.conf && \
