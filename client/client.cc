@@ -12,12 +12,12 @@
 
 namespace {
     // Change your file paths as necessary
-    const char* take_picture = "raspistill -o /home/pi/video_stream/motion_pic.jpg";
-    const char* take_video = "raspivid -o /home/pi/video_stream/video.h264 -t 5000 -d";
-    const char* remove_video = "rm /home/pi/video_stream/video.h264";
-    const char* remove_pic = "rm /home/pi/video_stream/motion_pic.jpg";
-    const std::string video_path = "/home/pi/video_stream/video.h264";
-    const std::string pic_path = "/home/pi/video_stream/motion_pic.jpg";
+    const char* take_picture = "raspistill -o /tmp/motion_pic.jpg";
+    const char* take_video = "raspivid -o /tmp/video.h264 -t 5000 -d";
+    const char* remove_video = "rm /tmp/video.h264";
+    const char* remove_pic = "rm /tmp/motion_pic.jpg";
+    const std::string video_path = "/tmp/video.h264";
+    const std::string pic_path = "/tmp/motion_pic.jpg";
     const int block_size = 8192;
     bool streaming = false;
 }
@@ -44,20 +44,34 @@ void react_to_motion( zmq::socket_t& socket ) {
 
     int file_size = get_file_size( file );
     std::cout << "File size: " << file_size << std::endl;
-    double total_sent = 0;
+    int total_sent = 0;
     int bytes_to_read = 0;
+    int read_size = block_size;
+
+    if ( file_size < read_size ) {
+	read_size = file_size;
+    }
+
     // Read data from file chunks at a time and send to server
-    while( file.read( buffer.data(), block_size ) ) {
-            buffer.shrink_to_fit();
-            total_sent += sizeof( buffer.data() );
+    while( read_size > 0 && file.read( buffer.data(), read_size ) ) {
+            total_sent += read_size;
 
             zmq::multipart_t multipart{};
             multipart.addtyp( file_size );
-            multipart.addmem( buffer.data(), sizeof( buffer.data() ) );
+            multipart.addmem( buffer.data(), read_size );
+
             if ( !multipart.send( socket ) ) {
-                std::cout << "Send failed!" << std::endl;
+                std::cout << "Send failed! at " << total_sent << std::endl;
                 break;
             }
+
+	    const int remaining_size = file_size - total_sent;
+
+	    if ( read_size > remaining_size ) {
+		read_size = remaining_size;
+	    }
+
+	    buffer.assign( block_size, 0 );
     }
     if( total_sent == file_size )
         // TODO: If the entire file was sent, we should see this print......but we don't......Why??
