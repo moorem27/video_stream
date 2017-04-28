@@ -23,11 +23,13 @@ the sensor, power will be to 5V and ground can be any pin marked as ground (thou
 ```bash
 # build & run server
 # NOTE: this will only build on x86/amd architectures
-docker-compose -d -f server/docker-compose.yml
+docker-compose build server
+docker-compose up -d server
 
 # build & run client
 # NOTE: this will only build on arm architectures
-docker-compose -d -f client/docker-compose.yml
+docker-compose build client
+docker-compose up -d client
 ```
 
 ## How to Setup Development Environment
