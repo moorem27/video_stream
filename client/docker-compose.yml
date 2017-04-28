@@ -1,0 +1,11 @@
+version: '2'
+
+services:
+  client:
+    build: client/
+    ports:
+      - "5555:5555"
+    devices:
+      - "/dev/vchiq"
+      - "/dev/gpiomem"
+    privileged: true
