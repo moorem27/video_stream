@@ -2,7 +2,7 @@ version: '2'
 
 services:
   client:
-    build: client/
+    build: .
     ports:
       - "5555:5555"
     devices:
