@@ -14,7 +14,7 @@ int main( void ) {
 	zmq::socket_t socket{ context, ZMQ_PULL };
 
 	// System command to convert file format
-	const char* convert =  "ffmpeg -i /tmp/first_vid.h264 -c copy /tmp/first_vid.mp4";
+	const char* convert =  "ffmpeg -i /tmp/first_vid.h264 -c copy /videostream-share/first_vid.mp4";
 
 	// Buffer size
 	size_t buffer_size = 10000;
