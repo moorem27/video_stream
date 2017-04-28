@@ -11,6 +11,6 @@ RUN \
 
 RUN echo 'building server...' && cd /src && mkdir build && cd build && cmake .. && make
 
-CMD ['/src/build/server']
+CMD ["/src/build/server"]
 
 EXPOSE 5555

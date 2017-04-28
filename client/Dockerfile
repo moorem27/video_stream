@@ -23,6 +23,6 @@ RUN \
 
 RUN echo 'building client...' && cd /src && mkdir build && cd build && cmake .. && make
 
-CMD ['/src/build/client']
+CMD ["/src/build/client"]
 
 EXPOSE 5555
