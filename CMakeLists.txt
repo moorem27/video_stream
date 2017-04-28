@@ -8,7 +8,7 @@ set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules" )
 find_package( ZMQ REQUIRED )
 
 if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64" )
-   add_subdirectory( server )
+      add_subdirectory( server )
 endif()
 
 if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7l" )
