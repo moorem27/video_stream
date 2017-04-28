@@ -10,15 +10,16 @@ script:
 - docker run --rm --privileged multiarch/qemu-user-static:register --reset && docker build -t brandonsoto/videostream:client -f client/Dockerfile .
 
 after_success:
-  - if [ "$TRAVIS_BRANCH" == "master" ]; then
-      docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-      docker push brandonsoto/videostream:server
-      docker push brandonsoto/videostream:client
-    fi
-  - if [ "$TRAVIS_BRANCH" == "development" ]; then
-      docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-      docker tag brandonsoto/videostream:server brandonsoto/videostream:server-dev
-      docker tag brandonsoto/videostream:client brandonsoto/videostream:client-dev
-      docker push brandonsoto/videostream:server-dev
-      docker push brandonsoto/videostream:client-dev
-    fi
+- if [ "$TRAVIS_BRANCH" == "master" ]; then
+  docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
+  docker push brandonsoto/videostream:server
+  docker push brandonsoto/videostream:client
+  fi
+- if [ "$TRAVIS_BRANCH" == "development" ]; then
+  docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
+  docker tag brandonsoto/videostream:server brandonsoto/videostream:server-dev
+  docker tag brandonsoto/videostream:client brandonsoto/videostream:client-dev
+  docker push brandonsoto/videostream:server-dev
+  docker push brandonsoto/videostream:client-dev
+  fi
+
