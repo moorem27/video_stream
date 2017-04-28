@@ -5,5 +5,4 @@
     - packages
     # - clion
     - docker
-    - wiringPi
     - zmq

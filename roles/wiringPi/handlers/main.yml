@@ -1,5 +1,0 @@
----
-- name: install wiring pi
-  shell: "./build && ldconfig"
-  args:
-    chdir: /opt/wiringPi
