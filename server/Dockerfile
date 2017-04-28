@@ -1,6 +1,6 @@
 # This container should be run on server
 
-FROM brandonsoto/cppzmq:ubuntu
+FROM brandonsoto/cppzmq
 MAINTAINER Brandon Soto (brandon.soto09@gmail.com)
 
 RUN \

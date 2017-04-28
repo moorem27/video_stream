@@ -6,4 +6,5 @@ services:
   - docker
 
 script:
-  - docker build -f server/Dockerfile . && docker run --rm --privileged multiarch/qemu-user-static:register --reset && docker build -f client/Dockerfile .
+  - docker build -f server/Dockerfile .
+  - docker run --rm --privileged multiarch/qemu-user-static:register --reset && docker build -f client/Dockerfile .
