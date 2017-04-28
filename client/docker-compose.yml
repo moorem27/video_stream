@@ -9,3 +9,5 @@ services:
       - "/dev/vchiq"
       - "/dev/gpiomem"
     privileged: true
+    volumes:
+       - .:/videostream-share
