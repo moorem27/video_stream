@@ -3,8 +3,10 @@
 FROM brandonsoto/cppzmq:rpi
 MAINTAINER Brandon Soto (brandon.soto09@gmail.com)
 
+ADD . /src
+
 RUN \
-   apt-get update -y -qq && \
+   apt-get update -y -q && \
    apt-get install -y -q vim rpi-update && \
    SKIP_WARNING=1 /usr/bin/rpi-update > /dev/null && \
    echo "/opt/vc/lib" > /etc/ld.so.conf.d/00-vmcs.conf && \
@@ -16,7 +18,9 @@ RUN \
    cd wiringPi && \
    git pull origin && \
    /opt/wiringPi/build && \
-   rm -rvf /var/lib/apt/lists/* && \
-   rm -rvf /tmp/*
+   rm -rf /var/lib/apt/lists/* && \
+   rm -rf /tmp/*
+
+RUN echo 'building client...' && cd /src && mkdir build && cd build && cmake .. && make
 
 EXPOSE 5555
