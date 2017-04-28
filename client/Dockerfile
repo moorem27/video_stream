@@ -6,8 +6,8 @@ MAINTAINER Brandon Soto (brandon.soto09@gmail.com)
 ADD . /src
 
 RUN \
-   apt-get update -y -q && \
-   apt-get install -y -q vim rpi-update && \
+   apt-get update -y -qq && \
+   apt-get install -y -qq rpi-update && \
    SKIP_WARNING=1 /usr/bin/rpi-update > /dev/null && \
    echo "/opt/vc/lib" > /etc/ld.so.conf.d/00-vmcs.conf && \
    ldconfig && \
@@ -22,5 +22,7 @@ RUN \
    rm -rf /tmp/*
 
 RUN echo 'building client...' && cd /src && mkdir build && cd build && cmake .. && make
+
+CMD ["/src/build/client"]
 
 EXPOSE 5555
