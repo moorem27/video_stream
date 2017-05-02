@@ -38,7 +38,7 @@ docker-compose down # shut down client
 ```bash
 vagrant up # sit back and relax because this will take a while
 ```
-## How to Run Application in Development Environment
+## How to Manually Build & Run Application in Development Environment
 ```bash
 vagrant up
 vagrant ssh
