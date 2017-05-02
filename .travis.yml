@@ -11,13 +11,6 @@ after_success:
     docker push brandonsoto/videostream:server;
     docker push brandonsoto/videostream:client;
   fi
-- if [ "$TRAVIS_BRANCH" == "development" ]; then
-    docker login -u="$DOCKER_USER" -p="$DOCKER_PASS";
-    docker tag brandonsoto/videostream:server brandonsoto/videostream:server-dev;
-    docker tag brandonsoto/videostream:client brandonsoto/videostream:client-dev;
-    docker push brandonsoto/videostream:server-dev;
-    docker push brandonsoto/videostream:client-dev;
-  fi
 
 script:
 - docker build -t brandonsoto/videostream:server -f server/Dockerfile .;
