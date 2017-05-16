@@ -10,3 +10,5 @@ raspivid -o - -t 0 -hf -w 640 -h 360 -fps 25 | cvlc -vvv stream:///dev/stdin --s
 # OR
 # in the command line type:
 # vlc rtsp://IP.TO.THE.PI:8554/
+# for plain interface type:
+# cvlc rtsp://IP.TO.THE.PI:8554/
